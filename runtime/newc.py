@@ -1,5 +1,4 @@
 """Pack an Alpine filesystem as a deterministic Linux initramfs."""
-import gzip
 from pathlib import Path
 import stat
 import sys
@@ -14,7 +13,7 @@ def entry(out, name, mode, data=b"", major=0, minor=0):
     out.write(name + align(110 + len(name)))
     out.write(data + align(len(data)))
 
-with output.open("wb") as file, gzip.GzipFile(fileobj=file, mode="wb", mtime=0, compresslevel=3) as out:
+with output.open("wb") as out:
     for path in sorted(root.rglob("*")):
         name = path.relative_to(root).as_posix()
         if name.startswith(("boot/", "usr/share/man/", "usr/share/doc/")):

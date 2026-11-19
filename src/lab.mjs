@@ -7,6 +7,8 @@ const terminal = $('terminal');
 const command = $('command');
 const status = $('runtime-status');
 const encoder = new TextEncoder();
+let decoder = new TextDecoder();
+const serialByte = new Uint8Array(1);
 const defaults = new Map();
 const edits = new Map();
 const files = Object.keys(course.files);
@@ -175,7 +177,8 @@ function receive(byte) {
   } else if (byte === 8) {
     line = line.slice(0, -1);
   } else if (byte !== 13 && (byte >= 32 || byte === 9 || byte === 27)) {
-    line = (line + String.fromCharCode(byte)).slice(-5000);
+    serialByte[0] = byte;
+    line = (line + decoder.decode(serialByte, { stream: true })).slice(-5000);
   }
   paint();
 }
@@ -201,6 +204,7 @@ async function initrd() {
 async function bootLinux() {
   terminalText = 'Booting the local Linux guest…\n';
   line = '';
+  decoder = new TextDecoder();
   paint();
   const [{ V86 }, image] = await Promise.all([import('./runtime/libv86.mjs'), initrd()]);
   status.textContent = 'Booting Linux';
@@ -215,7 +219,7 @@ async function bootLinux() {
   });
   await new Promise((resolve, reject) => {
     let recent = '';
-    const timeout = setTimeout(() => finish(new Error('Linux did not reach its shell. Try running again.')), 180000);
+    const timeout = setTimeout(() => finish(new Error('Linux did not reach its shell. Try running again.')), 300000);
     function finish(error) {
       clearTimeout(timeout);
       vm.remove_listener('serial0-output-byte', listener);
@@ -235,6 +239,7 @@ async function bootLinux() {
 
 $('run').onclick = async () => {
   if (running) return;
+  status.textContent = 'Preparing source';
   const current = lesson;
   const values = files.map(name => [name, valueOf(name)]);
   const prefix = 'run-' + (++runNumber) + '-';
@@ -244,7 +249,10 @@ $('run').onclick = async () => {
   $('restart').disabled = true;
   enableShell(false);
   try {
-    if (!boot) boot = bootLinux();
+    if (!boot) {
+      status.textContent = 'Loading Linux';
+      boot = bootLinux();
+    }
     await boot;
     $('restart').disabled = true;
     enableShell(false);
@@ -272,7 +280,7 @@ $('run').onclick = async () => {
     $('restart').disabled = false;
     vm.serial0_send(`sh ${scriptName}; printf '\\n${marker}%s\\n' "$?"\n`);
   } catch (error) {
-    if (vm) await vm.destroy();
+    if (vm) await vm.destroy().catch(() => {});
     vm = undefined;
     boot = undefined;
     $('restart').disabled = true;

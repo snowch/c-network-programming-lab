@@ -23,7 +23,8 @@ done < "$here/packages.tsv"
 sbin/apk.static --root "$PWD/root" --arch x86 --no-scripts --no-chown \
     --repositories-file /dev/null -X "$alpine/main" add "$@"
 install -m 755 "$here/init" root/init
-python3 "$here/newc.py" root root.cpio.gz
+python3 "$here/newc.py" root root.cpio
+python3 "$here/lz4-legacy.py" < root.cpio > root.cpio.lz4
 mkdir -p "$here/files"
 install -m 644 root/boot/vmlinuz-virt "$here/files/vmlinuz-virt"
-python3 "$here/split-image.py" root.cpio.gz "$here/files"
+python3 "$here/split-image.py" root.cpio.lz4 "$here/files"

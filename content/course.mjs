@@ -2,11 +2,11 @@ export const course = {
   "slug": "c-network-programming-lab",
   "title": "C Network Programming Lab",
   "summary": "Linux sockets, TCP and UDP, framing, readiness and multiplexing.",
-  "instructions": "Run in Linux compiles the editor contents with GCC and runs this exercise in the guest. Use the console output to check your prediction.",
+  "instructions": "Run in Linux sends the editor contents to the guest. GCC compiles new or edited source before running the exercise. Use the console output to check your prediction.",
   "files": {
     "network.c": "./examples/network.c"
   },
-  "prepare": "set -e\ngcc -std=c11 -Wall -Wextra -Werror -O2 /tmp/lesson-input/network.c -o /tmp/net",
+  "prepare": "if [ ! -x /tmp/net ] || [ /tmp/lesson-input/network.c -nt /tmp/net ]; then\n    echo 'Compiling network.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/network.c -o /tmp/net.next\n    mv /tmp/net.next /tmp/net\nfi",
   "lessons": [
     {
       "id": "addresses",
