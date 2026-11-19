@@ -59,6 +59,7 @@
       <p class="section-label" id="section"></p>
       <h1 id="lesson-title" tabindex="-1">{{title}}</h1>
       <p class="lede" id="intro"></p>
+      <p id="builds-on" hidden>Start with the smaller example. <a id="builds-on-link"></a></p>
       <p id="question" class="question"></p>
       <section aria-labelledby="walkthrough-heading">
         <h2 id="walkthrough-heading">Walk through the starter code</h2>
@@ -68,13 +69,15 @@
       <section aria-labelledby="workbench-heading">
         <h2 id="workbench-heading">Run it in Linux</h2>
         <p id="instructions"></p>
-        <p id="draft-notice" hidden>Run in Linux will use the draft in this lesson’s editor.</p>
+        <p id="draft-notice" hidden></p>
         <div class="workspace">
           <details id="program" class="program-tools">
-            <summary>Edit the complete program</summary>
+            <summary>Edit the lesson program</summary>
             <div class="toolbar">
               <label for="source">Editable source <code id="source-name"></code></label>
+              <span id="source-options" hidden><label for="file">Source to run</label> <select id="file"></select></span>
               <button type="button" id="restore" hidden>Restore starter</button>
+              <a id="support-code" target="_blank" rel="noopener noreferrer" hidden>Read the shared setup (new tab)</a>
             </div>
             <textarea id="source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="14"></textarea>
             <p id="draft-status" class="toolbar notice" role="status" hidden></p>

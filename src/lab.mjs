@@ -4,6 +4,7 @@ import { references } from './references.mjs';
 
 const $ = id => document.getElementById(id);
 const source = $('source');
+const file = $('file');
 const terminal = $('terminal');
 const shellOutput = $('shell-output');
 const command = $('command');
@@ -18,7 +19,7 @@ const draftMessages = new Map();
 const latestRuns = new Map();
 const earlierRuns = new Map();
 const key = 'linux-lab:' + course.slug + ':';
-let lesson, selection = 0, sourceError = '';
+let lesson, activeFile, selection = 0, sourceError = '';
 let vm, guestReady = false, resetting = false;
 let activeRun, runNumber = 0, line = '', shellText = '';
 
@@ -42,28 +43,32 @@ $('theme').onclick = () => {
   save('theme', value);
 };
 
-const starterFiles = Promise.all(Object.entries(course.files).map(async ([name, url]) => {
-  const response = await fetch(url);
+async function loadStarter(name) {
+  if (defaults.has(name)) return;
+  const response = await fetch(course.files[name]);
   if (!response.ok) throw Error('Could not load ' + name + '. Reload this page to try again.');
   defaults.set(name, await response.text());
-})).then(() => true).catch(error => {
-  sourceError = error.message;
-  return false;
-});
-
-function draftKey(item = lesson) { return item.id + '/' + item.file; }
-function valueOf(item = lesson) {
-  const draft = draftKey(item);
-  return edits.get(draft) ?? read(draft) ?? defaults.get(item.file);
 }
+
+function draftKey(name = activeFile) { return lesson.id + '/' + name; }
+function draftOf(name = activeFile) {
+  const keyName = draftKey(name);
+  return edits.get(keyName) ?? read(keyName);
+}
+function valueOf() { return draftOf() ?? defaults.get(activeFile); }
 function showDraftStatus() {
   const message = source.disabled ? undefined : draftMessages.get(draftKey());
   const notice = $('draft-status');
   if (notice.textContent !== (message?.text ?? '')) notice.textContent = message?.text ?? '';
   notice.hidden = !message;
   $('draft-backup').hidden = message?.saved !== false;
-  $('draft-notice').hidden = source.disabled || source.value === defaults.get(lesson.file);
-  $('restore').hidden = source.disabled || (source.value === defaults.get(lesson.file) && message?.saved !== false);
+  const earlier = activeFile !== lesson.file;
+  const changed = source.value !== defaults.get(activeFile);
+  const draftNotice = $('draft-notice');
+  draftNotice.hidden = source.disabled || (!changed && !earlier);
+  setText(draftNotice, earlier ? `Run in Linux will use the earlier shared program in ${activeFile}. Open editor at the change to switch to ${lesson.file} for this lesson’s edit.` :
+    'Run in Linux will use the draft in this lesson’s editor.');
+  $('restore').hidden = source.disabled || (!changed && message?.saved !== false);
 }
 function positionSource(needle) {
   const scope = Math.max(0, source.value.indexOf(lesson.focus));
@@ -76,7 +81,13 @@ function positionSource(needle) {
   source.scrollTop = Math.max(0, (row - 3) * lineHeight);
   source.scrollLeft = 0;
 }
-function showSource() {
+function showSource(name) {
+  activeFile = name;
+  file.value = name;
+  $('source-name').textContent = name;
+  const support = $('support-code');
+  support.hidden = name !== lesson.file || !lesson.support;
+  if (!support.hidden) support.href = './examples/' + lesson.support;
   source.value = valueOf() ?? '';
   source.scrollTop = 0;
   source.scrollLeft = 0;
@@ -85,6 +96,11 @@ function showSource() {
 $('edit-step').onclick = () => {
   if (!lesson || source.disabled) return;
   $('program').open = true;
+  if (activeFile !== lesson.file) {
+    showSource(lesson.file);
+    showDraftStatus();
+    showRun();
+  }
   source.focus();
   const edit = tutorials[lesson.id].edit;
   positionSource(source.value.includes(edit) ? edit : lesson.focus);
@@ -92,6 +108,12 @@ $('edit-step').onclick = () => {
 $('program').addEventListener('toggle', () => {
   if (lesson && $('program').open && document.activeElement !== source) positionSource(lesson.focus);
 });
+file.onchange = () => {
+  if (source.disabled) return;
+  showSource(file.value);
+  showDraftStatus();
+  showRun();
+};
 source.oninput = () => {
   const draft = draftKey();
   edits.set(draft, source.value);
@@ -105,17 +127,17 @@ source.oninput = () => {
   showRun();
 };
 $('restore').onclick = () => {
-  if (!confirm('Restore the starter source for this lesson?')) return;
+  if (!confirm(`Restore the starter source for ${activeFile}?`)) return;
   const draft = draftKey();
   const saved = remove(draft);
   if (saved) edits.delete(draft);
-  else edits.set(draft, defaults.get(lesson.file));
+  else edits.set(draft, defaults.get(activeFile));
   draftMessages.set(draft, {
     saved,
     text: saved ? 'Starter source restored.' :
       'Starter source restored in this tab. The browser could not remove the saved draft, which may return when you reopen the lesson.'
   });
-  showSource();
+  showSource(activeFile);
   showDraftStatus();
   showRun();
   source.focus({ preventScroll: true });
@@ -123,7 +145,7 @@ $('restore').onclick = () => {
 $('download-source').onclick = () => {
   const url = URL.createObjectURL(new Blob([source.value], { type: 'text/plain' }));
   const link = document.createElement('a');
-  link.download = lesson.file;
+  link.download = activeFile;
   link.href = url;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -159,6 +181,8 @@ function showReferences(id) {
 
 async function showLesson(index) {
   lesson = course.lessons[index];
+  activeFile = lesson.file;
+  sourceError = '';
   const thisSelection = ++selection;
   const tutorial = tutorials[lesson.id];
   $('program').open = false;
@@ -183,6 +207,12 @@ async function showLesson(index) {
     instructions:'instructions', task:'task', hint:'hint', explanation:'explanation',
     transfer:'transfer'
   })) $(id).textContent = lesson[field] ?? course[field] ?? '';
+  const smaller = course.lessons.find(item => item.id === lesson.buildsOn);
+  $('builds-on').hidden = !smaller;
+  if (smaller) {
+    $('builds-on-link').href = '#' + smaller.id;
+    $('builds-on-link').textContent = smaller.title;
+  }
   showReferences(lesson.id);
   picker.value = lesson.id;
   $('next-lesson').replaceChildren();
@@ -195,21 +225,38 @@ async function showLesson(index) {
   }
   source.disabled = true;
   $('edit-step').disabled = true;
+  $('source-options').hidden = true;
+  $('support-code').hidden = true;
   source.value = '';
   $('source-name').textContent = lesson.file;
   openComparison();
   showDraftStatus();
   showRun();
-  const sourceReady = await starterFiles;
-  if (selection !== thisSelection) return;
-  if (sourceReady) {
-    showSource();
-    source.disabled = false;
-    $('edit-step').disabled = false;
-    showDraftStatus();
+  const previous = lesson.previous?.file;
+  const previousDraft = previous ? draftOf(previous) : null;
+  const required = previousDraft == null ? [lesson.file] : [lesson.file, previous];
+  try {
+    await Promise.all(required.map(loadStarter));
+  } catch (error) {
+    if (selection === thisSelection) {
+      sourceError = error.message;
+      showRun();
+    }
+    return;
   }
+  if (selection !== thisSelection) return;
+  file.replaceChildren(new Option(lesson.file, lesson.file));
+  const showArchive = previousDraft != null && previousDraft !== defaults.get(previous);
+  if (showArchive) file.add(new Option('Earlier draft · ' + previous, previous));
+  $('source-options').hidden = !showArchive;
+  $('source-name').hidden = showArchive;
+  showSource(lesson.file);
+  source.disabled = false;
+  $('edit-step').disabled = false;
+  showDraftStatus();
   showRun();
 }
+
 function showRoute(moveFocus = false) {
   const index = course.lessons.findIndex(item => '#' + item.id === location.hash);
   const inLesson = index >= 0;
@@ -266,7 +313,7 @@ function showOutput() {
 function openComparison() {
   const current = latestRuns.get(lesson.id);
   const earlier = earlierRuns.get(lesson.id);
-  $('earlier-run').open = Boolean(earlier && current !== activeRun && earlier.code !== current.code);
+  $('earlier-run').open = Boolean(earlier && current !== activeRun && (earlier.file !== current.file || earlier.code !== current.code));
 }
 function showRun() {
   if (!lesson) return;
@@ -275,15 +322,15 @@ function showRun() {
   const sourceLabel = $('result-source');
   sourceLabel.hidden = !run;
   if (run) {
-    const kind = run.code === defaults.get(lesson.file) ? 'starter source' : 'edited source';
-    const stale = run.code !== valueOf();
-    setText(sourceLabel, `Run ${run.number} used ${kind}.` +
+    const kind = run.code === defaults.get(run.file) ? 'starter source' : 'edited source';
+    const stale = run.file !== activeFile || run.code !== valueOf();
+    setText(sourceLabel, `Run ${run.number} used ${kind} in ${run.file}.` +
       (stale ? ' The editor has changed. Select Run in Linux to use the current source.' : ''));
   }
   $('earlier-run').hidden = !earlier;
   if (earlier) {
-    const kind = earlier.code === defaults.get(lesson.file) ? 'starter source' : 'edited source';
-    setText($('earlier-run').querySelector('summary'), `Previous completed run ${earlier.number} · ${kind}`);
+    const kind = earlier.code === defaults.get(earlier.file) ? 'starter source' : 'edited source';
+    setText($('earlier-run').querySelector('summary'), `Previous completed run ${earlier.number} · ${kind} in ${earlier.file}`);
     setText($('earlier-output'), earlier.text);
   }
   const busy = Boolean(activeRun || resetting);
@@ -441,15 +488,15 @@ async function bootLinux(run) {
 
 runButton.onclick = async () => {
   if (!lesson || source.disabled || activeRun || resetting) return;
-  const current = lesson;
+  const current = activeFile === lesson.previous?.file ? lesson.previous : lesson;
   const number = ++runNumber;
   const marker = '__LAB_RUN_' + number;
-  const run = { lesson: current, number, code: valueOf(current), text: '',
+  const run = { lesson, file: current.file, number, code: valueOf(), text: '',
     startMarker: marker + '_START__', programMarker: marker + '_PROGRAM__', resultMarker: marker + '_EXIT__' };
-  const earlier = latestRuns.get(current.id);
-  if (earlier?.completed) earlierRuns.set(current.id, earlier);
+  const earlier = latestRuns.get(lesson.id);
+  if (earlier?.completed) earlierRuns.set(lesson.id, earlier);
   $('earlier-run').open = false;
-  latestRuns.set(current.id, run);
+  latestRuns.set(lesson.id, run);
   activeRun = run;
   terminal.scrollTop = 0;
   runMessage(run, guestReady ? 'Preparing source' : 'Loading Linux');

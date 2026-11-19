@@ -39,6 +39,8 @@ p{margin:.65rem 0 1rem}
 .toolbar,#shell{padding:.55rem .7rem}
 .toolbar label,#shell label{font-weight:600}
 .toolbar code{font-family:PlexMono,monospace;font-weight:400}
+#source-options{max-width:100%;min-width:0}
+#file{max-width:100%;text-overflow:ellipsis}
 textarea,pre,#command{font:16px/1.5 PlexMono,monospace}
 textarea,pre{background:var(--code);color:var(--code-ink);margin:0;padding:16px;display:block;width:100%;border:0;tab-size:4}
 textarea{resize:vertical;min-height:9rem;white-space:pre}

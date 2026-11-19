@@ -1,4 +1,21 @@
 export const walkthroughs = {
+  "first-recv": {
+    "edit": "const char first_part[]",
+    "steps": [
+      {
+        "heading": "Send the first piece",
+        "text": "The client sends two bytes without the C string terminator.",
+        "anchor": "const char first_part[]",
+        "lines": 3
+      },
+      {
+        "heading": "Measure one receive",
+        "text": "Pass the full buffer capacity and use the return value for the number of bytes copied.",
+        "anchor": "ssize_t received = recv(",
+        "lines": 3
+      }
+    ]
+  },
   "socket-api": {
     "edit": "requested_port =",
     "steps": [

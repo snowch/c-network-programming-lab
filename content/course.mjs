@@ -6,8 +6,9 @@ export const course = {
     "prerequisites": "You should be able to read a small C function with variables, arrays, pointers and return values. The course introduces the Linux calls as you use them. All traffic stays inside the browser’s Linux guest. DNS and TLS use bundled examples."
   },
   "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
-  "instructions": "Select Run in Linux to start the guest and run the complete program. For the first run, use the starter source. If you have edits here, open Edit the complete program and select Restore starter to repeat the original run.",
+  "instructions": "Select Run in Linux to start the guest and run the lesson program. For the first run, use the starter source. If you have edits here, open Edit the lesson program and select Restore starter to repeat the original run.",
   "files": {
+    "first-recv.c": "./examples/first-recv.c",
     "network.c": "./examples/network.c",
     "socket-basics.c": "./examples/socket-basics.c",
     "socket-tools.c": "./examples/socket-tools.c",
@@ -57,7 +58,7 @@ export const course = {
       "focus": "static int bind_loopback",
       "intro": "The previous lesson bound a UDP socket to a specific port. This program asks bind() for port 0, so Linux chooses an available one. getsockname() reads back the local address and assigned port.",
       "question": "Which port does Linux choose when the program asks to bind to port 0?",
-      "task": "Select Open editor at the change. In socket-basics.c, find requested_port in inspect_socket(). Replace requested_port = 0 with requested_port = 4040. Select Run in Linux. Compare the requested and bound ports with the first run.",
+      "task": "Select Open editor at the change. In socket-api.c, find requested_port in inspect_socket(). Replace requested_port = 0 with requested_port = 4040. Select Run in Linux. Compare the requested and bound ports with the first run.",
       "hint": "htons() puts the requested port into the byte order the socket address expects. ntohs() converts the result back for printing.",
       "explanation": "With port 0, Linux chooses an available port, called an ephemeral port. getsockname() retrieves the actual address and port. With port 4040, Linux binds to 4040 if it is available. The descriptor identifies the socket and has a separate value from the port.",
       "transfer": "If another UDP socket in the guest already uses 127.0.0.1:4040, which call would report the conflict and where would you read its error?",
@@ -73,7 +74,7 @@ export const course = {
       "focus": "static void send_datagram",
       "intro": "UDP sends each message as one datagram. The receiver binds to a local port. sendto() sends the bytes to that port, and recvfrom() reports how many bytes it copied and the sender address. The sender starts without a bound port.",
       "question": "What byte count and sender port does recvfrom() report when the sender sends “ping”?",
-      "task": "Select Open editor at the change. In socket-basics.c, find message in send_datagram(). Replace \"ping\" with \"status\", including the quotes. Select Run in Linux. Compare the byte count and message. Does the receiver still report a sender port?",
+      "task": "Select Open editor at the change. In datagram-api.c, find message in send_datagram(). Replace \"ping\" with \"status\", including the quotes. Select Run in Linux. Compare the byte count and message. Does the receiver still report a sender port?",
       "hint": "The first send gives the unbound socket a local port. The receiver gets that port separately from the bytes in the message.",
       "explanation": "The starter sends 4 bytes and the edit sends 6. sizeof message includes the terminating zero in the C array. The program subtracts one before sending, so recvfrom() reports the payload bytes alone.",
       "transfer": "Which address and length returned by recvfrom() would you pass to sendto() to reply to that sender?",
@@ -89,7 +90,7 @@ export const course = {
       "focus": "static void accept_stream",
       "intro": "TCP connects two endpoints and delivers a stream of bytes. The server puts a bound socket into listening mode with listen(). The client calls connect(), then the server calls accept() to obtain a new descriptor for that established connection.",
       "question": "What evidence shows whether the accepted connection can still carry data after the listening socket closes?",
-      "task": "Select Open editor at the change. In socket-basics.c, find payload in accept_stream(). Change the character literal from 'A' to 'Z'. Select Run in Linux. Check which byte was received after the listener closed.",
+      "task": "Select Open editor at the change. In listen-api.c, find payload in accept_stream(). Change the character literal from 'A' to 'Z'. Select Run in Linux. Check which byte was received after the listener closed.",
       "hint": "One descriptor waits for new connections. The other belongs to an individual connected client.",
       "explanation": "The descriptor numbers refer to different sockets. The program closes the listener before sending, then receives A in the starter or Z after the edit on the connection returned by accept().",
       "transfer": "If the listener stays open while three clients connect, which descriptor should the server pass to recv() for each client?",
@@ -104,7 +105,7 @@ export const course = {
       "intro": "An address family identifies the format of a socket address, such as IPv4 or IPv6. getaddrinfo() turns a host and service into candidate addresses. This example asks the guest for localhost and numeric service 8080.",
       "question": "Which address families does this guest list for localhost?",
       "focus": "static void addresses",
-      "task": "Select Open editor at the change. In network.c, find .ai_family = AF_UNSPEC inside addresses(). Replace AF_UNSPEC there with AF_INET6. Select Run in Linux. Which address line remains, and is its port still 8080?",
+      "task": "Select Open editor at the change. In addresses.c, find .ai_family = AF_UNSPEC inside addresses(). Replace AF_UNSPEC there with AF_INET6. Select Run in Linux. Which address line remains, and is its port still 8080?",
       "hint": "AF_UNSPEC allows either address family in this query. AF_INET6 requests IPv6 candidates.",
       "explanation": "The guest’s hosts file lists both 127.0.0.1 and ::1 for localhost. The filter removes the IPv4 address. This changes the allowed address family, while the requested service is still port 8080.",
       "transfer": "Which field in the hints struct would you change to request datagram sockets for the same host and service?",
@@ -120,7 +121,7 @@ export const course = {
       "focus": "static void ipv6_echo",
       "intro": "IPv6 uses its own socket address format, sockaddr_in6. The address ::1 is IPv6 loopback inside the guest. The server receives a datagram with recvfrom() and sends the same byte back to the source address and port.",
       "question": "Which source address and port identify the sending peer in this exchange?",
-      "task": "Select Open editor at the change. In socket-tools.c, find payload in ipv6_echo(). Change the character literal from '6' to 'V'. Select Run in Linux. Which part of the IPv6 peer line stays ::1, and which part now shows V?",
+      "task": "Select Open editor at the change. In ipv6.c, find payload in ipv6_echo(). Change the character literal from '6' to 'V'. Select Run in Linux. Which part of the IPv6 peer line stays ::1, and which part now shows V?",
       "hint": "IPv6 addresses contain colons. The brackets separate the address from the port printed after it.",
       "explanation": "The address remains ::1 while the echoed byte follows the edit. The source port is reported by recvfrom() and can vary between runs. sendto() and recvfrom() accept either address family when passed the matching structure and length.",
       "transfer": "Which address and length in a getaddrinfo() result could you give to bind() without assuming a family?",
@@ -136,7 +137,7 @@ export const course = {
       "focus": "static const char dns_name",
       "intro": "The Domain Name System (DNS) uses a transaction ID to match a question with a response. The page runs a program that sends a UDP DNS question to a fixture inside this guest. The fixture answers for echo.lab.test.",
       "question": "How does the DNS answer for the fixture’s known name differ from the answer for an unknown name?",
-      "task": "Select Open editor at the change. In socket-tools.c, change the dns_name string at the top from \"echo.lab.test\" to \"missing.lab.test\". Select Run in Linux. Read the response on the missing.lab.test line and compare it with the first run’s A record and TTL.",
+      "task": "Select Open editor at the change. In dns.c, change the dns_name string at the top from \"echo.lab.test\" to \"missing.lab.test\". Select Run in Linux. Read the response on the missing.lab.test line and compare it with the first run’s A record and TTL.",
       "hint": "The response echoes the transaction ID. Its response code indicates whether the name exists in this fixture.",
       "explanation": "The known name returns an A record for 127.0.0.1 with a TTL of 30 seconds. NXDOMAIN means the requested name does not exist in this fixture. The edited program successfully receives that response, so Run completed is expected.",
       "transfer": "If your client sends several DNS questions while earlier answers are still in flight, what should it check in each response before using the answer?",
@@ -145,13 +146,34 @@ export const course = {
       "evidence": "In Run output, read the requested name, the A record (an IPv4 address) and its TTL (time to live in seconds)."
     },
     {
+      "id": "first-recv",
+      "section": "Stream protocols",
+      "title": "Read once from a TCP socket",
+      "intro": "The included setup opens a local TCP connection. The sender writes a short string. The receiver calls recv() once with room for five bytes.",
+      "question": "How many bytes does one recv() copy when only two bytes have been sent into a five-byte buffer?",
+      "task": "Select Open editor at the change. In first-recv.c, find the first_part string in main(). Replace \"he\" with \"hey\". Select Run in Linux. Compare the first recv byte count and buffer size with the starter.",
+      "hint": "The sizeof buffer argument is the space available. recv() returns how many bytes it copied during that call.",
+      "explanation": "The starter receives two bytes in this loopback run. The edited program receives three. Both calls have room for five bytes. A TCP receive can return fewer bytes than the buffer holds.",
+      "transfer": "If your protocol expects a five-byte message and the first receive copies two, what should your next call do with the destination offset and remaining size?",
+      "file": "first-recv.c",
+      "focus": "const char first_part[]",
+      "assets": [
+        "tcp-support.h"
+      ],
+      "support": "tcp-support.h",
+      "prepare": "if [ ! -x /tmp/lab-first-recv ] || ! cmp -s /tmp/lesson-input/first-recv.c /tmp/lab-first-recv.source; then\n    echo 'Compiling first-recv.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/first-recv.c -o /tmp/lab-first-recv.next\n    cp /tmp/lesson-input/first-recv.c /tmp/lab-first-recv.source.next\n    rm -f /tmp/lab-first-recv.source\n    mv /tmp/lab-first-recv.next /tmp/lab-first-recv\n    mv /tmp/lab-first-recv.source.next /tmp/lab-first-recv.source\nfi",
+      "command": "/tmp/lab-first-recv",
+      "evidence": "In Run output, find “first recv” and compare the returned byte count with the five-byte buffer size."
+    },
+    {
       "id": "stream",
+      "buildsOn": "first-recv",
       "section": "Stream protocols",
       "title": "Read a TCP message in pieces",
       "intro": "TCP delivers bytes in order. It leaves message boundaries to the application. This program writes part of “hello”, calls recv() on the peer and writes the rest only after that call returns.",
       "question": "What does the first recv() copy when the client has only sent the first two bytes?",
       "focus": "static void stream",
-      "task": "Select Open editor at the change. In network.c, change SPLIT = 2 to SPLIT = 3 near the top of the editor. Select Run in Linux. Compare “first recv” and “echo” with the first run. Which changes?",
+      "task": "Select Open editor at the change. In stream.c, change SPLIT = 2 to SPLIT = 3 near the top of the editor. Select Run in Linux. Compare “first recv” and “echo” with the first run. Which changes?",
       "hint": "The second send waits until after the first recv(). The receive loop starts writing again at the offset that recv() returned.",
       "explanation": "The starter receives 2 of 5 bytes on the first call in this setup. With SPLIT set to 3, the first call receives 3 of 5. Both runs echo hello. On a TCP connection a call may copy fewer bytes than requested, so the loop collects the remainder.",
       "transfer": "If the sender writes all five bytes in one call, how should the receiver track progress when its first recv() copies only one?",
@@ -166,7 +188,7 @@ export const course = {
       "intro": "A frame is one message as defined by the application. This protocol puts a four-byte length before the payload. The sender uses network byte order, so the receiver can interpret the length even on a machine that stores integers differently.",
       "question": "How can the receiver distinguish the two messages while reading a single TCP stream?",
       "focus": "static void framing",
-      "task": "Select Open editor at the change. In network.c, find send_frame(client, \"bye\", 3) inside framing(). Change that call to send_frame(client, \"goodbye\", 7). Select Run in Linux. Compare both lengths and check where EOF is reported.",
+      "task": "Select Open editor at the change. In frames.c, find send_frame(client, \"bye\", 3) inside framing(). Change that call to send_frame(client, \"goodbye\", 7). Select Run in Linux. Compare both lengths and check where EOF is reported.",
       "hint": "The parser reads all four header bytes, checks the length against LIMIT and then collects that many payload bytes.",
       "explanation": "The first frame still contains 5 bytes. The second expands from 3 bytes to 7. EOF means end of the byte stream. At the start of another header it is a clean end. EOF partway through a header or payload means the frame is incomplete.",
       "transfer": "If LIMIT is 64 and the next header announces 65 bytes, which line should reject it before the program tries to read the payload?",
@@ -181,7 +203,7 @@ export const course = {
       "intro": "A half-close ends one direction of a TCP connection. Calling shutdown() with SHUT_WR tells Linux that this sender is finished. The same socket can still receive bytes from the other side.",
       "question": "Can the client read a server acknowledgement after ending its outgoing request stream?",
       "focus": "static void half_close",
-      "task": "Select Open editor at the change. In network.c, find send_all(peer, \"ok\", 2) inside half_close(). Change the call to send_all(peer, \"yes\", 3). Select Run in Linux. Compare the request byte count and the reply text with the first run.",
+      "task": "Select Open editor at the change. In half-close.c, find send_all(peer, \"ok\", 2) inside half_close(). Change the call to send_all(peer, \"yes\", 3). Select Run in Linux. Compare the request byte count and the reply text with the first run.",
       "hint": "The call to shutdown() leaves the descriptor open. The client calls recv() on that same descriptor.",
       "explanation": "Both runs send a 5-byte request followed by EOF to the server. The acknowledgement changes from ok to yes. The end of the client’s outgoing stream does not close the server’s outgoing stream.",
       "transfer": "If the server reads EOF halfway through a length-prefixed request, should it acknowledge that request as complete? Explain using the last lesson’s frame parser.",
@@ -196,7 +218,7 @@ export const course = {
       "intro": "UDP keeps the boundaries of each datagram. recvmsg() consumes one datagram at a time. If the buffer cannot hold the whole datagram, the message flags include MSG_TRUNC.",
       "question": "Does the second recvmsg() return leftover bytes of the first datagram or the start of the next one?",
       "focus": "static void udp",
-      "task": "Select Open editor at the change. In network.c, find char data[SPLIT] inside udp(). Change that declaration to char data[8]. Select Run in Linux. Compare the copied bytes and truncation flag on both datagram lines.",
+      "task": "Select Open editor at the change. In udp.c, find char data[SPLIT] inside udp(). Change that declaration to char data[8]. Select Run in Linux. Compare the copied bytes and truncation flag on both datagram lines.",
       "hint": "The sender calls sendto() twice, with a 5-byte payload each time. The first two bytes of each payload are he.",
       "explanation": "Each starter read returns he with truncated=1. The remaining three bytes of each datagram are not offered on another read. With the larger buffer, both reads return hello with truncated=0.",
       "transfer": "A sender writes a 10-byte datagram and another sender writes two 5-byte datagrams. With a 10-byte buffer, how would the number of recvmsg() calls and their counts differ?",
@@ -212,7 +234,7 @@ export const course = {
       "focus": "static void udp_deadline",
       "intro": "UDP leaves retry decisions to the program. The client uses poll() to wait for a reply up to a deadline. Each request carries an ID, a number that lets the client check which request a reply matches.",
       "question": "Which request ID gets a reply when the program deliberately withholds the first one?",
-      "task": "Select Open editor at the change. In socket-tools.c, find answer_first_attempt in udp_deadline(). Change its value from 0 to 1. Select Run in Linux. Read which request ID gets the reply and check whether a timeout or second attempt still appears.",
+      "task": "Select Open editor at the change. In deadline.c, find answer_first_attempt in udp_deadline(). Change its value from 0 to 1. Select Run in Linux. Read which request ID gets the reply and check whether a timeout or second attempt still appears.",
       "hint": "The same loopback sockets are used in each run. The server code decides whether to produce the first reply.",
       "explanation": "The starter waits for request 1, times out and gets reply ID 2 from the next attempt. With the first reply enabled, request 1 gets reply ID 1 and the program returns immediately.",
       "transfer": "If an old reply arrives after you send a newer request, what should your program do when the reply’s ID does not match the current request?",
@@ -228,7 +250,7 @@ export const course = {
       "focus": "static void descriptor_message",
       "intro": "Unix-domain sockets exchange messages within one Linux guest. An open file description is the kernel’s record of an open file or pipe. The SCM_RIGHTS control message asks Linux to install a new descriptor for that record at the receiving end.",
       "question": "Can the receiver read the pipe after the sender closes its own descriptor for it?",
-      "task": "Select Open editor at the change. In socket-tools.c, find the recvmsg() call in descriptor_message(). Replace its third argument, MSG_CMSG_CLOEXEC, with 0. Select Run in Linux. Check the pipe byte and the new close-on-exec flag.",
+      "task": "Select Open editor at the change. In unix.c, find the recvmsg() call in descriptor_message(). Replace its third argument, MSG_CMSG_CLOEXEC, with 0. Select Run in Linux. Check the pipe byte and the new close-on-exec flag.",
       "hint": "The ordinary message byte and the control message carry different things. The control message keeps a reference to the open pipe while the message is in transit.",
       "explanation": "Both runs read F through the new pipe descriptor. MSG_CMSG_CLOEXEC asks Linux to set the flag on that descriptor, so the flag changes from 1 to 0 when the option is removed.",
       "transfer": "Why would sending the sender’s descriptor number as ordinary text to a different process fail to give that process access to the pipe?",
@@ -244,7 +266,7 @@ export const course = {
       "focus": "static void connect_status",
       "intro": "A nonblocking call can return before an operation finishes. A nonblocking connect() may report EINPROGRESS while the connection is under way. Here the program polls when it must wait, then reads the outcome with getsockopt(SO_ERROR).",
       "question": "How does the program distinguish a successful connection from a refusal after connection setup finishes?",
-      "task": "Select Open editor at the change. In socket-tools.c, find accept_connections in connect_status(). Change its value from 1 to 0. Select Run in Linux. Compare “connect completion” with the first run.",
+      "task": "Select Open editor at the change. In connect-status.c, find accept_connections in connect_status(). Change its value from 1 to 0. Select Run in Linux. Compare “connect completion” with the first run.",
       "hint": "The program still binds to the port. The edit stops it from calling listen(), so no TCP server is listening on that port.",
       "explanation": "The starter reports connected because SO_ERROR is zero. The edited program reports Connection refused from a nonzero SO_ERROR. Run completed is expected in both cases because the program checks the outcome its setting calls for.",
       "transfer": "How could your program distinguish a refusal from a connection that is still pending when your own deadline expires?",
@@ -259,7 +281,7 @@ export const course = {
       "intro": "A nonblocking receive returns without waiting. Linux reports EAGAIN here when no bytes are ready. poll() waits for a socket event such as readability or for a timeout.",
       "question": "How do the poll() results change after the client sends bytes to the same socket?",
       "focus": "static void readiness",
-      "task": "Select Open editor at the change. In network.c, find char data[SPLIT] inside readiness(). Change it to char data[8]. Select Run in Linux. Compare the two poll counts and the copied byte count with the first run.",
+      "task": "Select Open editor at the change. In readiness.c, find char data[SPLIT] inside readiness(). Change it to char data[8]. Select Run in Linux. Compare the two poll counts and the copied byte count with the first run.",
       "hint": "poll() counts the descriptors with events. The later recv() copies at most the number of bytes its buffer can hold.",
       "explanation": "Idle poll reports 0 in both runs. Once the sender writes, readable poll reports 1. A larger buffer lets recv() copy all 5 queued bytes here instead of 2. The poll count is about descriptors, not bytes.",
       "transfer": "Besides a new payload arriving, what can make recv() return immediately on a TCP socket after poll() reports readability?",
@@ -274,7 +296,7 @@ export const course = {
       "intro": "Backpressure occurs when the sender cannot queue any more outgoing data. The program keeps the receiver idle until a nonblocking send() reports EAGAIN. The receiver then drains the queued bytes to let the sender resume.",
       "question": "How can you tell that the sender made progress again after the receiving peer read the queued bytes?",
       "focus": "static void backpressure",
-      "task": "Select Open editor at the change. In network.c, find int capacity = 4096 inside backpressure(), just above setsockopt(). Change 4096 to 16384. Select Run in Linux. Compare the bytes accepted before EAGAIN with the first run and check that the final retry still delivers a byte.",
+      "task": "Select Open editor at the change. In backpressure.c, find int capacity = 4096 inside backpressure(), just above setsockopt(). Change 4096 to 16384. Select Run in Linux. Compare the bytes accepted before EAGAIN with the first run and check that the final retry still delivers a byte.",
       "hint": "SO_SNDBUF requests a send buffer size. The accepted byte count also depends on Linux buffering and the reading state of the peer.",
       "explanation": "The sender watches for writability with POLLOUT after the peer reads. It retries with a new byte and verifies that the peer receives it. The count before EAGAIN is an observation for this loopback test and is not a measure of network speed.",
       "transfer": "If send() accepts part of a message and the next call reports EAGAIN, what information should the program keep so it can resume without sending a byte twice?",
@@ -289,7 +311,7 @@ export const course = {
       "intro": "A peer is the endpoint at the other end of a connection. epoll tracks readiness across multiple descriptors. The example uses level-triggered readiness, which can report a socket again while it still has unread data.",
       "question": "Which output confirms that the server tracks separate echoes for every client?",
       "focus": "static void multiplex",
-      "task": "Select Open editor at the change. In network.c, change PEERS = 2 to PEERS = 3 near the top of the editor. Select Run in Linux. Compare the peer totals and verified echo count with the first run.",
+      "task": "Select Open editor at the change. In epoll.c, change PEERS = 2 to PEERS = 3 near the top of the editor. Select Run in Linux. Compare the peer totals and verified echo count with the first run.",
       "hint": "epoll_ctl() associates each socket with a peer index. The event lets the loop look up the matching byte count.",
       "explanation": "The loop updates only the peer named by each event. Each client verifies a full 5-byte echo, so the final count goes from 2 to 3. This tests correctness for these clients, without measuring how much traffic the server can handle.",
       "transfer": "If each peer could send a length-prefixed message of a different size, what would you track separately for each socket?",
@@ -305,7 +327,7 @@ export const course = {
       "focus": "static const char expected_host",
       "intro": "TLS encrypts this byte stream and lets the client check the server’s identity. A certificate authority (CA) signs certificates. The client trusts the bundled lab CA and checks that the signed server certificate matches the DNS name it expects.",
       "question": "Does a certificate signed by the lab’s trusted CA pass when the client expects a different server name?",
-      "task": "Select Open editor at the change. In tls.c, change the expected_host string at the top from \"echo.lab.test\" to \"wrong.lab.test\". Select Run in Linux. Read the TLS rejection reason and check whether an encrypted echo still appears.",
+      "task": "Select Open editor at the change. In tls-client.c, change the expected_host string at the top from \"echo.lab.test\" to \"wrong.lab.test\". Select Run in Linux. Read the TLS rejection reason and check whether an encrypted echo still appears.",
       "hint": "SSL_CTX_set_verify() enables checks on the server certificate. SSL_set1_host() specifies the name that certificate must match.",
       "explanation": "The starter checks the signed certificate and its name, then exchanges the echo. The edited program observes a hostname mismatch during the handshake and sends no application data. It treats the expected rejection as a completed experiment.",
       "transfer": "If you restored the original name but trusted an unrelated CA, which check would still prevent the client from sending the echo?",
@@ -327,7 +349,7 @@ export const course = {
       "focus": "static void observe_packets",
       "intro": "A Linux packet socket can read packet headers at a network interface. The page runs this program inside the guest. It observes a UDP datagram the program sends over loopback and reads the surrounding IPv4 and UDP headers.",
       "question": "How many extra bytes does each protocol header add to the datagram’s payload in this test?",
-      "task": "Select Open editor at the change. In socket-tools.c, find the payload string in observe_packets(). Replace \"capture\" with \"abc\". Select Run in Linux. Compare the three length fields and check whether either header size changed.",
+      "task": "Select Open editor at the change. In packets.c, find the payload string in observe_packets(). Replace \"capture\" with \"abc\". Select Run in Linux. Compare the three length fields and check whether either header size changed.",
       "hint": "UDP length includes the UDP header. IPv4 total length also includes the IPv4 header, which is 20 bytes in this test.",
       "explanation": "The starter reports 35 bytes for IPv4, 15 for UDP and 7 for the payload. The edit reports 31, 11 and 3. The differences remain 20 bytes for the IPv4 header and 8 bytes for the UDP header. IPv4 headers can be longer when they include options.",
       "transfer": "If the IPv4 header includes options, which header field would you use to locate the start of the UDP header?",
@@ -345,7 +367,7 @@ export const course = {
       "intro": "The main program starts a child process that runs a framed echo server. Each client sends one text frame and one empty frame, ends its outgoing stream, then checks both replies and the end of the server stream.",
       "question": "How does the client distinguish an empty frame from the end of the byte stream?",
       "focus": "static void framed_session",
-      "task": "Select Open editor at the change. In network.c, change PEERS = 2 to PEERS = 3 near the top of the editor. Select Run in Linux. Count the verified client lines and find the server exit line. Does the extra client complete all three checks?",
+      "task": "Select Open editor at the change. In capstone.c, change PEERS = 2 to PEERS = 3 near the top of the editor. Select Run in Linux. Count the verified client lines and find the server exit line. Does the extra client complete all three checks?",
       "hint": "An empty frame includes a full four-byte header announcing zero payload bytes. EOF between frames has no header.",
       "explanation": "Each client checks the text and the empty frame, then confirms EOF. After the edit there are three verified clients. This server processes those connections in turn and exits when it has handled the requested number.",
       "transfer": "For a version that serves several clients at once, use the epoll lesson to explain which receive and send offsets you would store for each peer.",
@@ -355,3 +377,49 @@ export const course = {
     }
   ]
 };
+
+// Retain the original run configuration for drafts saved against shared files.
+const supportFiles = {
+  'network.c': 'tcp-support.h',
+  'socket-tools.c': 'socket-support.h',
+  'socket-basics.c': null,
+  'tls.c': 'tls-support.h'
+};
+for (const lesson of course.lessons) {
+  if (!Object.hasOwn(supportFiles, lesson.file)) continue;
+  const original = lesson.file;
+  const support = supportFiles[original];
+  lesson.previous = {
+    file: original,
+    prepare: lesson.prepare ?? course.prepare,
+    command: lesson.command,
+    assets: lesson.assets
+  };
+  lesson.file = original === 'tls.c' ? 'tls-client.c' : lesson.id + '.c';
+  course.files[lesson.file] = './examples/' + lesson.file;
+  if (support) {
+    lesson.support = support;
+    lesson.assets = [support, ...(lesson.assets ?? [])];
+  }
+  if (original === 'tls.c') {
+    lesson.prepare = lesson.previous.prepare.replaceAll('tls.c', lesson.file).replaceAll('/tmp/linux-tls', '/tmp/lab-tls-client');
+    lesson.command = lesson.previous.command.replace('/tmp/linux-tls', '/tmp/lab-tls-client');
+    continue;
+  }
+  const source = '/tmp/lesson-input/' + lesson.file;
+  const executable = '/tmp/lab-' + lesson.id;
+  const libraries = original === 'socket-tools.c' ? ' -lresolv' : '';
+  lesson.prepare = [
+    `if [ ! -x ${executable} ] || ! cmp -s ${source} ${executable}.source; then`,
+    `    echo 'Compiling ${lesson.file} in Linux'`,
+    `    gcc -std=c11 -Wall -Wextra -Werror ${source} -o ${executable}.next${libraries}`,
+    `    cp ${source} ${executable}.source.next`,
+    `    rm -f ${executable}.source`,
+    `    mv ${executable}.next ${executable}`,
+    `    mv ${executable}.source.next ${executable}.source`,
+    'fi'
+  ].join('\n');
+  lesson.command = lesson.command.replace(/\/tmp\/[a-z-]+ [a-z0-9-]+$/, executable);
+  if (lesson.command === lesson.previous.command)
+    throw Error('Missing lesson entry point for ' + lesson.id);
+}

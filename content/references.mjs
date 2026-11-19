@@ -26,6 +26,7 @@ const sockopt = man('getsockopt.2', 'At SOL_SOCKET, getsockopt(SO_ERROR) retriev
 const epoll = man('epoll.7', 'Register descriptors with epoll_ctl(), then collect ready events with epoll_wait(). Use the event data to find the state for each peer.', 'epoll_create1(), epoll_ctl(), epoll_wait()');
 
 export const references = {
+  "first-recv": [send, recv],
   'create-socket': [socket, close],
   'bind-socket': [bind, byteOrder, socket],
   'socket-api': [bind, localAddress, byteOrder, man('inet_ntop.3', 'inet_ntop() converts the binary IP address to text. Use an INET_ADDRSTRLEN buffer for IPv4.')],
