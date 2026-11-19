@@ -64,10 +64,13 @@ function showDraftStatus() {
   $('draft-backup').hidden = message?.saved !== false;
   const earlier = activeFile !== lesson.file;
   const changed = source.value !== defaults.get(activeFile);
+  const hasArchive = file.options.length > 1;
   const draftNotice = $('draft-notice');
-  draftNotice.hidden = source.disabled || (!changed && !earlier);
-  setText(draftNotice, earlier ? `Run in Linux will use the earlier shared program in ${activeFile}. Open editor at the change to switch to ${lesson.file} for this lesson’s edit.` :
-    'Run in Linux will use your draft. To run the original, open Edit the lesson program and select Restore starter.');
+  draftNotice.hidden = source.disabled || (!changed && !earlier && !hasArchive);
+  const guidance = earlier ? `Run in Linux will use the earlier shared program in ${activeFile}. Open editor at the change to switch to ${lesson.file} for this lesson’s edit.` :
+    changed ? 'Run in Linux will use your draft. To run the original, open Edit the lesson program and select Restore starter.' :
+      'An earlier draft is available. Open Edit the lesson program and choose Earlier draft from Source to run.';
+  setText(draftNotice, guidance);
   $('restore').hidden = source.disabled || (!changed && message?.saved !== false);
 }
 function positionSource(needle) {

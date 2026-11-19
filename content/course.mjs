@@ -150,7 +150,7 @@ export const course = {
       "section": "Stream protocols",
       "title": "Read once from a TCP socket",
       "intro": "The included setup opens a local TCP connection. The sender writes a short string. The receiver calls recv() once with room for five bytes.",
-      "question": "How many bytes does one recv() copy when only two bytes have been sent into a five-byte buffer?",
+      "question": "The sender writes two bytes. How many bytes does one recv() copy into the five-byte buffer on this run?",
       "task": "Select Open editor at the change. In first-recv.c, find the first_part string in main(). Replace \"he\" with \"hey\". Select Run in Linux. Compare the first recv byte count and buffer size with the starter.",
       "hint": "The sizeof buffer argument is the space available. recv() returns how many bytes it copied during that call.",
       "explanation": "The starter receives two bytes in this loopback run. The edited program receives three. Both calls have room for five bytes. A TCP receive can return fewer bytes than the buffer holds.",
