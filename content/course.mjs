@@ -29,10 +29,6 @@ export const course = {
       "hint": "Linux rejects socket types it does not recognise. Look for the return value checked by the if statement.",
       "explanation": "The starter call returns a nonnegative descriptor, such as 3. When the type is invalid, socket() returns -1. perror() explains the error and the program exits with status 1.",
       "transfer": "Why would you avoid passing the result to another socket call until you have checked it?",
-      "reference": [
-        "Read socket(2)",
-        "https://man7.org/linux/man-pages/man2/socket.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/create-socket ] || ! cmp -s /tmp/lesson-input/create-socket.c /tmp/create-socket.source; then\n    echo 'Compiling create-socket.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/create-socket.c -o /tmp/create-socket.next\n    mv /tmp/create-socket.next /tmp/create-socket\n    cp /tmp/lesson-input/create-socket.c /tmp/create-socket.source\nfi",
       "command": "/tmp/create-socket"
     },
@@ -48,10 +44,6 @@ export const course = {
       "hint": "Only the port changes. INADDR_LOOPBACK keeps the address at 127.0.0.1.",
       "explanation": "The first run binds 127.0.0.1:4040. Changing port binds 127.0.0.1:4041. htons() arranges the port’s bytes in the order the networking API expects.",
       "transfer": "What could cause bind() to fail even if socket() succeeded?",
-      "reference": [
-        "Read bind(2)",
-        "https://man7.org/linux/man-pages/man2/bind.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/bind-socket ] || ! cmp -s /tmp/lesson-input/bind-socket.c /tmp/bind-socket.source; then\n    echo 'Compiling bind-socket.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/bind-socket.c -o /tmp/bind-socket.next\n    mv /tmp/bind-socket.next /tmp/bind-socket\n    cp /tmp/lesson-input/bind-socket.c /tmp/bind-socket.source\nfi",
       "command": "/tmp/bind-socket"
     },
@@ -67,10 +59,6 @@ export const course = {
       "hint": "Port zero asks Linux to assign a free ephemeral port. htons() and ntohs() convert port numbers to and from network byte order.",
       "explanation": "A valid descriptor is a nonnegative integer. The first run shows an assigned port. The second run requests port 4040 explicitly.",
       "transfer": "Where would you inspect the error if another socket already held port 4040?",
-      "reference": [
-        "Read bind(2)",
-        "https://man7.org/linux/man-pages/man2/bind.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-basics ] || ! cmp -s /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\n    cp /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source\nfi",
       "command": "/tmp/socket-basics socket"
     },
@@ -86,10 +74,6 @@ export const course = {
       "hint": "The first send makes Linux choose a local address and port for the unbound sender.",
       "explanation": "The reply address is metadata returned by recvfrom(). The byte count is the size of the received payload, without a C string terminator.",
       "transfer": "How would you send a reply using the address and length returned by recvfrom()?",
-      "reference": [
-        "Read recvfrom(2)",
-        "https://man7.org/linux/man-pages/man2/recvfrom.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-basics ] || ! cmp -s /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\n    cp /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source\nfi",
       "command": "/tmp/socket-basics datagram"
     },
@@ -105,10 +89,6 @@ export const course = {
       "hint": "The listening socket handles future arrivals. The accepted socket represents the data stream for one client.",
       "explanation": "The two descriptors refer to different sockets. Closing the listener prevents new accepts and leaves the accepted socket available.",
       "transfer": "Which descriptor should a server pass to recv() for each new connection?",
-      "reference": [
-        "Read accept(2)",
-        "https://man7.org/linux/man-pages/man2/accept.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-basics ] || ! cmp -s /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\n    cp /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source\nfi",
       "command": "/tmp/socket-basics listen"
     },
@@ -123,10 +103,6 @@ export const course = {
       "hint": "AF_UNSPEC accepts every available family. AF_INET6 restricts the query to IPv6.",
       "explanation": "The guest’s hosts file defines both loopback addresses. Restricting the family removes the IPv4 candidate. The service still resolves to port 8080.",
       "transfer": "Which field would you change to find UDP candidates for the same service?",
-      "reference": [
-        "Read getaddrinfo(3)",
-        "https://man7.org/linux/man-pages/man3/getaddrinfo.3.html"
-      ],
       "command": "/tmp/net addresses",
       "file": "network.c"
     },
@@ -142,10 +118,6 @@ export const course = {
       "hint": "The peer address and port are separate fields. The bracketed output keeps the port distinct from colons in the address.",
       "explanation": "Both datagrams travel through IPv6 loopback. IPv4 and IPv6 use different address structures even though the send and receive APIs are the same.",
       "transfer": "How would you pass an address candidate from getaddrinfo() to bind() without hard-coding a family?",
-      "reference": [
-        "Read ipv6(7)",
-        "https://man7.org/linux/man-pages/man7/ipv6.7.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools ipv6"
     },
@@ -161,10 +133,6 @@ export const course = {
       "hint": "The response repeats the transaction ID. The low four bits of the response flags hold the response code.",
       "explanation": "The existing name returns an A record with an IPv4 address and a time to live in seconds. NXDOMAIN reports that the requested name does not exist in the fixture.",
       "transfer": "Why must a resolver match the transaction ID and the answering peer before using a response?",
-      "reference": [
-        "Read the DNS message format in RFC 1035",
-        "https://www.rfc-editor.org/rfc/rfc1035#section-4.1"
-      ],
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools dns"
     },
@@ -179,10 +147,6 @@ export const course = {
       "hint": "The second send runs only after the first recv() returns. Find the receive loop that collects the remaining bytes.",
       "explanation": "The first read can see only bytes already sent. The receive loop tracks its offset and reconstructs all five bytes, regardless of where individual reads stop.",
       "transfer": "If the client sends all five bytes together, what must the receiver still do to handle a short read?",
-      "reference": [
-        "Read tcp(7)",
-        "https://man7.org/linux/man-pages/man7/tcp.7.html"
-      ],
       "command": "/tmp/net stream",
       "file": "network.c"
     },
@@ -197,10 +161,6 @@ export const course = {
       "hint": "The parser reads a complete header, checks the maximum length and then reads exactly that payload length.",
       "explanation": "Length prefixes tell the parser how many bytes to consume. EOF before a header starts is a clean end. EOF after part of a header or payload is a broken frame.",
       "transfer": "What should happen if a header announces LIMIT + 1 bytes and the peer sends nothing else?",
-      "reference": [
-        "Read byteorder(3)",
-        "https://man7.org/linux/man-pages/man3/byteorder.3.html"
-      ],
       "command": "/tmp/net frames",
       "file": "network.c"
     },
@@ -215,10 +175,6 @@ export const course = {
       "hint": "The client’s descriptor remains open. It stopped sending with shutdown(), then called recv() on that same descriptor.",
       "explanation": "The server reads the request and then sees EOF. The client’s receiving direction remains open for the acknowledgement.",
       "transfer": "How should a server respond to EOF if its length-prefixed request is incomplete?",
-      "reference": [
-        "Read shutdown(2)",
-        "https://man7.org/linux/man-pages/man2/shutdown.2.html"
-      ],
       "command": "/tmp/net half-close",
       "file": "network.c"
     },
@@ -233,10 +189,6 @@ export const course = {
       "hint": "The sender issues two sendto() calls of five bytes each.",
       "explanation": "Each call consumes one datagram. With a two-byte buffer, both reads get the first two bytes of their own datagram. A large enough buffer preserves all five bytes.",
       "transfer": "How would the receiver distinguish one long datagram from two short ones?",
-      "reference": [
-        "Read udp(7)",
-        "https://man7.org/linux/man-pages/man7/udp.7.html"
-      ],
       "command": "/tmp/net udp",
       "file": "network.c"
     },
@@ -252,10 +204,6 @@ export const course = {
       "hint": "The test suppresses a reply in code. It uses the same loopback route in both cases.",
       "explanation": "The first configuration times out and sends a second ID. When the first reply is enabled, the client receives ID 1 and stops retrying.",
       "transfer": "How would you handle an old reply that arrives after you have already sent a newer request?",
-      "reference": [
-        "Read poll(2)",
-        "https://man7.org/linux/man-pages/man2/poll.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools deadline"
     },
@@ -271,10 +219,6 @@ export const course = {
       "hint": "The ancillary data is separate from the ordinary message payload. It carries a reference to the pipe, whose bytes remain available through the new descriptor.",
       "explanation": "The receiver reads the pipe even after the sender closed its handle. MSG_CMSG_CLOEXEC sets close-on-exec when Linux installs the received descriptor.",
       "transfer": "Why would sending the same descriptor number as ordinary text fail between two independent processes?",
-      "reference": [
-        "Read unix(7)",
-        "https://man7.org/linux/man-pages/man7/unix.7.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools unix"
     },
@@ -290,10 +234,6 @@ export const course = {
       "hint": "The endpoint retains its port. Without listen(), no server is accepting TCP connections there.",
       "explanation": "A successful connection has SO_ERROR zero. A connection to the bound but non-listening port completes with ECONNREFUSED.",
       "transfer": "How would you distinguish a refusal from a connection attempt that outlives your own deadline?",
-      "reference": [
-        "Read connect(2)",
-        "https://man7.org/linux/man-pages/man2/connect.2.html"
-      ],
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools connect"
     },
@@ -308,10 +248,6 @@ export const course = {
       "hint": "A readable event describes what an operation can do now. The following recv() still returns its actual byte count.",
       "explanation": "Idle poll returns zero. After the send, the same socket reports readable. The receive buffer limits how many bytes one call copies.",
       "transfer": "What other event besides new data can make recv() return immediately?",
-      "reference": [
-        "Read poll(2)",
-        "https://man7.org/linux/man-pages/man2/poll.2.html"
-      ],
       "command": "/tmp/net readiness",
       "file": "network.c"
     },
@@ -326,10 +262,6 @@ export const course = {
       "hint": "The peer stays idle while the sender fills its queue. The count depends on the kernel’s socket buffering and TCP flow control.",
       "explanation": "Once the peer reads the queued bytes, the sender can wait for POLLOUT and retry. Real programs retain unsent bytes across retries and watch writability only while work is pending.",
       "transfer": "What should a sender do when send() accepts part of one message before the next call reports EAGAIN?",
-      "reference": [
-        "Read send(2)",
-        "https://man7.org/linux/man-pages/man2/send.2.html"
-      ],
       "command": "/tmp/net backpressure",
       "file": "network.c"
     },
@@ -344,10 +276,6 @@ export const course = {
       "hint": "epoll_ctl() associates each socket with a peer index. A ready event can recur until its socket is drained.",
       "explanation": "The loop chooses a peer from each event and only updates that peer’s total. Each client checks its own complete echo before the program exits.",
       "transfer": "How would you replace the fixed payload length with a per-peer frame parser, and what extra state would you keep for each peer?",
-      "reference": [
-        "Read epoll(7)",
-        "https://man7.org/linux/man-pages/man7/epoll.7.html"
-      ],
       "command": "/tmp/net epoll",
       "file": "network.c"
     },
@@ -363,10 +291,6 @@ export const course = {
       "hint": "SSL_CTX_set_verify() enables peer verification. SSL_set1_host() specifies which name the certificate must match.",
       "explanation": "The starter verifies the certificate and echoes the message using the negotiated TLS version and cipher. A name mismatch stops the handshake before the client sends application data.",
       "transfer": "Which part of this test would also fail if the application loaded a different certificate authority?",
-      "reference": [
-        "Read OpenSSL hostname verification",
-        "https://docs.openssl.org/3.5/man3/SSL_set1_host/"
-      ],
       "assets": [
         "openssl-headers.tar.gz",
         "lab-ca.pem",
@@ -388,10 +312,6 @@ export const course = {
       "hint": "UDP length includes its eight-byte header. The IPv4 total length also includes the IP header.",
       "explanation": "The generated datagram has real kernel-written headers. These length fields measure different ranges, so the three counts stay related as the payload changes.",
       "transfer": "Which field would you check before deciding where the UDP header starts if the IPv4 header included options?",
-      "reference": [
-        "Read packet(7)",
-        "https://man7.org/linux/man-pages/man7/packet.7.html"
-      ],
       "assets": [
         "af_packet.ko.gz"
       ],
@@ -409,10 +329,6 @@ export const course = {
       "hint": "Look at the four-byte header. An empty frame has a complete header announcing zero payload bytes. EOF between frames has no header.",
       "explanation": "The child handles each accepted connection until the peer half-closes. Every client checks both boundaries before the parent collects the server’s exit status.",
       "transfer": "Use the epoll lesson to design a version that retains independent header, body and write offsets for each connected client.",
-      "reference": [
-        "Read recv(2)",
-        "https://man7.org/linux/man-pages/man2/recv.2.html"
-      ],
       "command": "/tmp/net capstone",
       "file": "network.c"
     }
