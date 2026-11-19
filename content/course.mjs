@@ -1,6 +1,10 @@
 export const course = {
   "slug": "c-network-programming-lab",
   "title": "C Network Programming Lab",
+  "overview": {
+    "description": "Build network programs using the Linux socket API. Start with a local UDP datagram and a TCP connection, then work through framing, backpressure, DNS, TLS and packet inspection.",
+    "prerequisites": "Know basic C. The exercises use loopback and bundled DNS and TLS fixtures inside the guest."
+  },
   "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
   "instructions": "Run in Linux sends the editor contents to the guest. GCC compiles new or edited source before running the exercise. Use the console output to check your prediction.",
   "files": {
