@@ -11,7 +11,7 @@
   <script type="module" src="./lab.mjs"></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to lesson</a>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header>
     <div class="header-inner">
       <img id="overview-icon" class="lab-icon" src="./apple-touch-icon.png" width="40" height="40" alt="">
@@ -43,7 +43,7 @@
         </section>
         <section aria-labelledby="offline-help">
           <h2 id="offline-help">Learning offline</h2>
-          <p>The lab runs Linux in WebAssembly. Choose <strong>Download for offline use</strong> while connected, then reopen this course in the same browser.</p>
+          <p>While connected, choose <strong>Download for offline use</strong> and wait for <strong>Available offline</strong>. Reopen the same course URL in this browser profile. Manual links need a connection.</p>
         </section>
       </div>
       <nav aria-labelledby="outline-title">
@@ -61,46 +61,51 @@
       <p class="lede" id="intro"></p>
       <p id="question" class="question"></p>
       <section aria-labelledby="walkthrough-heading">
-        <h2 id="walkthrough-heading">Walk through the code</h2>
+        <h2 id="walkthrough-heading">Walk through the starter code</h2>
+        <p>These excerpts show the starter source. Use the complete program editor below to make changes.</p>
         <ol id="walkthrough" class="walkthrough"></ol>
       </section>
       <section aria-labelledby="workbench-heading">
         <h2 id="workbench-heading">Run it in Linux</h2>
+        <p id="instructions"></p>
+        <p id="draft-notice" hidden>Run in Linux will use the draft in this lesson’s editor.</p>
         <div class="workspace">
           <details id="program" class="program-tools">
             <summary>Edit the complete program</summary>
             <div class="toolbar">
-              <label for="file">Source file</label>
-              <select id="file"></select>
-              <button type="button" id="restore">Restore starter</button>
+              <label for="source">Editable source <code id="source-name"></code></label>
+              <button type="button" id="restore" hidden>Restore starter</button>
             </div>
-            <textarea id="source" aria-label="Editable lab source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="14"></textarea>
+            <textarea id="source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="14"></textarea>
+            <p id="draft-status" class="toolbar notice" role="status" hidden></p>
+            <div class="toolbar" id="draft-backup" hidden><button type="button" id="download-source">Download source</button></div>
           </details>
           <div class="toolbar controls">
-            <button type="button" id="run" class="primary">Run in Linux</button>
-            <button type="button" id="stop" disabled>Interrupt</button>
-            <button type="button" id="restart" disabled>Reset Linux</button>
+            <button type="button" id="run" class="primary" disabled>Run in Linux</button>
+            <button type="button" id="stop" hidden>Interrupt run</button>
             <span id="runtime-status" role="status">Linux is off</span>
           </div>
-          <pre id="terminal" aria-label="Linux console output" tabindex="0">The output from this run will appear here.</pre>
-          <details class="program-tools">
-            <summary>Open Linux shell</summary>
-            <form id="shell">
-              <label for="command">Shell command</label>
-              <input id="command" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" disabled placeholder="Enter a command after Linux boots">
-              <button type="submit" disabled>Send</button>
-            </form>
+          <div class="output-heading">
+            <h3 id="output-heading">Run output</h3>
+            <p id="evidence"></p>
+            <p id="result-source" class="notice" hidden></p>
+          </div>
+          <pre id="terminal" aria-labelledby="output-heading" tabindex="0">Select Run in Linux to see output from this lesson.</pre>
+          <details id="earlier-run" class="tool-panel" hidden>
+            <summary>Previous completed run</summary>
+            <pre id="earlier-output" aria-label="Previous completed run output" tabindex="0"></pre>
           </details>
         </div>
-        <p id="draft-notice" hidden>Your saved edits will run. Choose Restore starter in the editor to repeat the original example.</p>
-        <p class="read-result"><strong>Read the result.</strong> <span id="read-result"></span></p>
       </section>
       <section class="lesson-task" aria-labelledby="change-heading">
         <h2 id="change-heading">Change one thing</h2>
         <p id="task"></p>
-        <button type="button" id="edit-step" disabled>Show me where to edit</button>
-        <details><summary>Hint</summary><p id="hint"></p></details>
-        <details><summary>Compare with the worked explanation</summary><p id="explanation"></p></details>
+        <button type="button" id="edit-step" disabled>Open editor at the change</button>
+        <details><summary>Hint for the code change</summary><p id="hint"></p></details>
+      </section>
+      <section aria-labelledby="explanation-heading">
+        <h2 id="explanation-heading">Explain the result</h2>
+        <p id="explanation"></p>
         <p id="transfer" class="question"></p>
       </section>
       <details id="lesson-references" class="lesson-references">
@@ -118,10 +123,21 @@
           <ul id="reference-list"></ul>
         </div>
       </details>
+      <details id="guest-tools" class="tool-panel">
+        <summary>Linux shell and reset</summary>
+        <p>Run an experiment to start Linux. In this shell, wait for the prompt to return before you start another lesson run. Resetting Linux clears temporary guest files and keeps your editor changes.</p>
+        <form id="shell">
+          <label for="command">Shell command</label>
+          <input id="command" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" disabled>
+          <button type="submit" disabled>Send command</button>
+        </form>
+        <div class="toolbar"><button type="button" id="shell-stop" disabled>Interrupt shell command</button><button type="button" id="restart" disabled>Reset Linux</button></div>
+        <pre id="shell-output" aria-label="Linux shell output" tabindex="0">Linux is off.</pre>
+      </details>
       <nav id="next-lesson" aria-label="Course progression"></nav>
     </article>
     <noscript>This course needs JavaScript to open the editor and boot Linux in WebAssembly.</noscript>
   </main>
-  <footer>Runs in an isolated Linux guest on this device. Source edits are saved in this browser.</footer>
+  <footer>Experiments use an isolated Linux guest on this device.</footer>
 </body>
 </html>

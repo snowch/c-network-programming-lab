@@ -1,7 +1,5 @@
 export const walkthroughs = {
   "socket-api": {
-    "goal": "You have bound a socket to a specific port. Now let Linux pick a free port. The program requests port zero and prints the port it actually got.",
-    "look": "Find “requested port 0, bound to 127.0.0.1:…”. The number after the colon is the assigned port. The descriptor on the line above is the handle your program uses, and it is a different number.",
     "edit": "requested_port =",
     "steps": [
       {
@@ -19,8 +17,6 @@ export const walkthroughs = {
     ]
   },
   "datagram-api": {
-    "goal": "Send a short message over UDP and find out how the receiver learns where to send a reply.",
-    "look": "Find “received 4 bytes” and “ping”. The port printed on that line belongs to the sender. Linux chooses it when the unbound sender makes its first send.",
     "edit": "const char message[]",
     "steps": [
       {
@@ -38,9 +34,7 @@ export const walkthroughs = {
     ]
   },
   "listen-api": {
-    "goal": "Set up a TCP listener, accept a client, and test which descriptor carries the conversation.",
-    "look": "The listener and accepted connection have different descriptors. Look for “received A after closing the listening socket”. That line proves the connection still works.",
-    "edit": "const char payload = 'A';",
+    "edit": "const char payload =",
     "steps": [
       {
         "heading": "Listen on a bound address",
@@ -57,9 +51,7 @@ export const walkthroughs = {
     ]
   },
   "addresses": {
-    "goal": "Ask Linux for socket addresses for a name and service instead of choosing an address family in advance.",
-    "look": "Look for the lines labelled IPv4 and IPv6. Both should show service port 8080. The order can vary.",
-    "edit": ".ai_family = AF_UNSPEC",
+    "edit": ".ai_family =",
     "steps": [
       {
         "heading": "Describe the addresses you can use",
@@ -76,9 +68,7 @@ export const walkthroughs = {
     ]
   },
   "ipv6": {
-    "goal": "Reuse the UDP round trip with an IPv6 endpoint and see what changes in the address structure.",
-    "look": "Find “[::1]” and “echoed 6”. The brackets distinguish the IPv6 address from the separate port number.",
-    "edit": "char payload = '6'",
+    "edit": "char payload =",
     "steps": [
       {
         "heading": "Create IPv6 endpoints",
@@ -95,8 +85,6 @@ export const walkthroughs = {
     ]
   },
   "dns": {
-    "goal": "Look inside a DNS exchange with a responder in the guest, so you can tell an answer from a missing name.",
-    "look": "The starter prints an A record with 127.0.0.1 and a TTL of 30 seconds. Compare both fields after trying a name the fixture does not serve.",
     "edit": "static const char dns_name",
     "steps": [
       {
@@ -114,9 +102,7 @@ export const walkthroughs = {
     ]
   },
   "stream": {
-    "goal": "See why reading a TCP socket once does not guarantee a whole application message.",
-    "look": "Look for “first recv: 2 of 5 bytes”, then “echo: hello”. The first count describes one read. The full echo shows what the receive loop assembled.",
-    "edit": "SPLIT = 2",
+    "edit": "SPLIT =",
     "steps": [
       {
         "heading": "Make the first read before sending the rest",
@@ -133,9 +119,7 @@ export const walkthroughs = {
     ]
   },
   "frames": {
-    "goal": "Give a TCP stream explicit message boundaries by adding a length before every message.",
-    "look": "Look for the two decoded lines, “frame 5: hello” and “frame 3: bye”. The last line should report clean EOF between frames.",
-    "edit": "send_frame(client, \"bye\", 3);",
+    "edit": "send_frame(client, \"",
     "steps": [
       {
         "heading": "Write a length and then a payload",
@@ -152,9 +136,7 @@ export const walkthroughs = {
     ]
   },
   "half-close": {
-    "goal": "Tell a TCP server there is no more request data while leaving the connection open for its reply.",
-    "look": "Find the server’s byte count followed by EOF, then “client still receives: ok”. That second line demonstrates the other direction is still open.",
-    "edit": "send_all(peer, \"ok\", 2);",
+    "edit": "send_all(peer, \"",
     "steps": [
       {
         "heading": "Finish sending",
@@ -171,9 +153,7 @@ export const walkthroughs = {
     ]
   },
   "udp": {
-    "goal": "Check what survives when a datagram is larger than the receive buffer.",
-    "look": "Each datagram should show two copied bytes, “he”, and truncated=1. The second receive starts a new datagram.",
-    "edit": "char data[SPLIT];",
+    "edit": "char data[",
     "steps": [
       {
         "heading": "Give the kernel a small buffer",
@@ -190,9 +170,7 @@ export const walkthroughs = {
     ]
   },
   "deadline": {
-    "goal": "Add a deadline and retry to an application that sends a request over UDP.",
-    "look": "The first request should time out. The second should get reply ID 2. The fixture drops the first response on purpose.",
-    "edit": "const int answer_first_attempt = 0;",
+    "edit": "const int answer_first_attempt =",
     "steps": [
       {
         "heading": "Wait for a reply for a bounded time",
@@ -209,9 +187,7 @@ export const walkthroughs = {
     ]
   },
   "unix": {
-    "goal": "Use a Unix-domain socket to hand off an open pipe without copying the pipe’s data into the socket message.",
-    "look": "The receiver should read F from the passed pipe. The starter reports close-on-exec=1 for the received descriptor.",
-    "edit": "require(recvmsg(channel[1], &message, MSG_CMSG_CLOEXEC)",
+    "edit": "require(recvmsg(channel[1], &message,",
     "steps": [
       {
         "heading": "Attach the handle to the message",
@@ -228,13 +204,11 @@ export const walkthroughs = {
     ]
   },
   "connect-status": {
-    "goal": "Distinguish a socket that finished connecting from one that finished with an error.",
-    "look": "Start with “connect completion: connected”. After removing the listener, look for “Connection refused” rather than relying on poll alone.",
-    "edit": "const int accept_connections = 1;",
+    "edit": "const int accept_connections =",
     "steps": [
       {
         "heading": "Wait if connect is still in progress",
-        "text": "EINPROGRESS is normal on a nonblocking socket. Wait for writability, which can mean success or failure.",
+        "text": "EINPROGRESS means the connection attempt is still under way. The program asks poll() for a writable event and then checks the connection outcome separately.",
         "anchor": "int result = connect(client, (struct sockaddr *)&address, sizeof address);",
         "lines": 5
       },
@@ -247,9 +221,7 @@ export const walkthroughs = {
     ]
   },
   "readiness": {
-    "goal": "Wait for data on a TCP socket without repeatedly calling recv on an empty connection.",
-    "look": "Read the trace in order. EAGAIN means no input is available yet, idle poll returns 0, and the later readable poll returns 1.",
-    "edit": "char data[SPLIT];",
+    "edit": "char data[",
     "steps": [
       {
         "heading": "Try a read without blocking",
@@ -266,9 +238,7 @@ export const walkthroughs = {
     ]
   },
   "backpressure": {
-    "goal": "Fill a TCP sender’s buffer, then recover after the receiving program starts reading.",
-    "look": "Find the count at EAGAIN. The precise count is up to Linux. Then find the matching drained count and the successful new byte.",
-    "edit": "int capacity = 4096;",
+    "edit": "int capacity =",
     "steps": [
       {
         "heading": "Stop sending when the socket cannot accept more",
@@ -285,9 +255,7 @@ export const walkthroughs = {
     ]
   },
   "epoll": {
-    "goal": "Give several TCP clients progress in one server loop without dedicating a process to each client.",
-    "look": "Find the totals for both peers and “verified 2 independent echoes”. The order of peer events may vary.",
-    "edit": "PEERS = 2",
+    "edit": "PEERS =",
     "steps": [
       {
         "heading": "Register each peer with its own identifier",
@@ -304,8 +272,6 @@ export const walkthroughs = {
     ]
   },
   "tls": {
-    "goal": "Verify the identity of a local TLS service before trusting the bytes it sends back.",
-    "look": "Find the verified name and the encrypted echo. The version and cipher are reported by OpenSSL. A mismatched name should prevent the echo.",
     "edit": "static const char expected_host[]",
     "steps": [
       {
@@ -323,9 +289,7 @@ export const walkthroughs = {
     ]
   },
   "packets": {
-    "goal": "Compare the bytes your application sends with the lengths written into a real loopback packet.",
-    "look": "The starter should show 7 bytes of payload, 15 bytes for UDP including its header, and 35 bytes for IPv4 including both headers.",
-    "edit": "static const char payload[] = \"capture\";",
+    "edit": "static const char payload[]",
     "steps": [
       {
         "heading": "Observe IPv4 on loopback",
@@ -335,16 +299,14 @@ export const walkthroughs = {
       },
       {
         "heading": "Read the three length fields",
-        "text": "The IPv4 total includes the network header. The UDP length includes its own header. Subtract the size of that UDP header to get the payload length.",
+        "text": "The IPv4 total includes the IPv4 header. The UDP length includes its own header and payload. Subtract the UDP header size from that length to get the payload size.",
         "anchor": "printf(\"loopback IPv4 total=%u bytes, UDP total=%u bytes, payload=%zu bytes",
         "lines": 3
       }
     ]
   },
   "capstone": {
-    "goal": "Combine framing, half-close and process cleanup into an end-to-end check of a small TCP service.",
-    "look": "Each client should verify the text frame, the empty frame and EOF. Finish by checking “server process reaped”.",
-    "edit": "PEERS = 2",
+    "edit": "PEERS =",
     "steps": [
       {
         "heading": "Send two frames and finish the write side",
@@ -361,9 +323,7 @@ export const walkthroughs = {
     ]
   },
   "create-socket": {
-    "goal": "Start with one job for your program. Ask Linux for a UDP socket and print the result. You will give that socket an address in the next lesson.",
-    "look": "Find “socket returned descriptor”, followed by a nonnegative number. A descriptor is a handle the program can use in other calls. The exact number can vary.",
-    "edit": "int type = SOCK_DGRAM;",
+    "edit": "int type =",
     "steps": [
       {
         "heading": "Ask Linux for a socket",
@@ -373,20 +333,18 @@ export const walkthroughs = {
       },
       {
         "heading": "Check the result before using it",
-        "text": "A descriptor can be zero or greater. The value -1 means the call failed. perror() prints the reason from errno.",
+        "text": "A descriptor can be zero or greater. The value -1 means the call failed. perror() uses errno, the error number set by the failed call, to print the reason.",
         "anchor": "if (fd == -1)",
         "lines": 4
       }
     ]
   },
   "bind-socket": {
-    "goal": "A receiver needs an address and port where other sockets can reach it. Give the socket you created in the previous lesson a local endpoint.",
-    "look": "Find “bound to 127.0.0.1:4040”. The address before the colon is loopback. The number after it is the port you supplied.",
-    "edit": "unsigned short port = 4040;",
+    "edit": "unsigned short port =",
     "steps": [
       {
         "heading": "Describe the local endpoint",
-        "text": "Use 127.0.0.1 so the endpoint stays inside this Linux guest. htons() converts 4040 to network byte order before the port is stored.",
+        "text": "INADDR_LOOPBACK supplies the address 127.0.0.1 inside the guest. htons() arranges the bytes of the port number in the order the socket address expects.",
         "anchor": "unsigned short port = 4040;",
         "lines": 6
       },
