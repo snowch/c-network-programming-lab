@@ -2,11 +2,11 @@
 
 Copyright © 2026 Christopher Snow.
 
-[Open the course](https://snowch.github.io/c-network-programming-lab/). Know basic C. Start with Linux socket APIs, then build transport protocols and diagnose real local exchanges.
+[Open the course](https://snowch.github.io/c-network-programming-lab/). Start with basic C, including variables, arrays, pointers and return values. Learn the Linux socket calls, then build transport protocols and diagnose real local exchanges.
 
-Each lesson opens its own runnable program. Common setup is available from the editor. Read once from a TCP socket before assembling the whole message. Earlier saved drafts of the shared files are available in the source picker.
+Each lesson opens its own runnable program. The editor links the shared setup where the program uses it. An earlier shared-file draft stays available in the source picker if one exists for the lesson.
 
-Each lesson includes editable C source, a runnable experiment, a code change, a hint and a transfer question. **Run in Linux** compiles the source with GCC and executes it in a self-hosted Alpine Linux guest using WebAssembly. The browser saves source changes per lesson. Reset Linux starts a fresh guest and keeps the editor changes.
+Each lesson includes editable C source, a runnable experiment, a code change, a hint and a transfer question. **Run in Linux** compiles the source with GCC and executes it in a self-hosted Alpine Linux guest using WebAssembly. Source changes are saved per lesson when browser storage is available. If the page reports a storage failure, **Download source** saves the copy in the current tab. **Reset Linux** clears guest files and keeps the editor changes. The next run boots a fresh guest.
 
 Choose **Download for offline use** before disconnecting. Save roughly 145 MB of free browser storage for this course. Open the same URL in the same browser profile after the page reports **Available offline**. The lesson files, editor, compiler, kernel and runtime are included. External documentation requires an internet connection. HTTPS or localhost and a browser with WebAssembly and service workers are required.
 
@@ -24,7 +24,7 @@ Choose **Download for offline use** before disconnecting. Save roughly 145 MB of
 
 - [Resolve a name into socket addresses](https://snowch.github.io/c-network-programming-lab/#addresses)
 - [Exchange datagrams over IPv6 loopback](https://snowch.github.io/c-network-programming-lab/#ipv6)
-- [Send a DNS question to a local resolver](https://snowch.github.io/c-network-programming-lab/#dns)
+- [Send a DNS question to a local responder](https://snowch.github.io/c-network-programming-lab/#dns)
 
 ### Stream protocols
 

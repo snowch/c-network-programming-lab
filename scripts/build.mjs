@@ -31,7 +31,7 @@ for (const lesson of course.lessons) {
   const source = await readFile(at('../' + course.files[lesson.file]), 'utf8');
   const lines = source.split('\n');
   const focusLine = lines.findIndex(line => line.includes(lesson.focus));
-  if (!guide?.goal || !guide.look || !source.includes(guide.edit) || !guide.steps?.length)
+  if (!guide?.edit || !source.includes(guide.edit) || !guide.steps?.length)
     throw Error('Incomplete walkthrough for ' + lesson.id);
   const steps = guide.steps.map(({heading, text, anchor, lines: length}) => {
     const matches = line => line.trimStart().startsWith(anchor);

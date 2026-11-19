@@ -19,6 +19,7 @@ button,select,input{font:inherit}
 button,select{min-height:42px;padding:.34rem .68rem;border:1px solid var(--line);border-radius:.4rem;background:var(--paper);color:var(--ink);cursor:pointer}
 button:hover:enabled{border-color:var(--accent)}
 button:disabled{opacity:.5;cursor:default}
+button[aria-disabled=true]{opacity:.65;cursor:default}
 .primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 .layout{width:min(100%,1120px);margin:0 auto;padding:clamp(24px,5vw,64px) clamp(16px,4vw,44px)}
 .lesson-picker{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem .65rem;margin-bottom:1.25rem}
@@ -37,6 +38,9 @@ p{margin:.65rem 0 1rem}
 .workspace{background:var(--paper);border:1px solid var(--line);border-radius:.55rem;overflow:hidden}
 .toolbar,#shell{padding:.55rem .7rem}
 .toolbar label,#shell label{font-weight:600}
+.toolbar code{font-family:PlexMono,monospace;font-weight:400}
+#source-options{max-width:100%;min-width:0}
+#file{max-width:100%;text-overflow:ellipsis}
 textarea,pre,#command{font:16px/1.5 PlexMono,monospace}
 textarea,pre{background:var(--code);color:var(--code-ink);margin:0;padding:16px;display:block;width:100%;border:0;tab-size:4}
 textarea{resize:vertical;min-height:9rem;white-space:pre}
@@ -68,13 +72,13 @@ footer{border-top:1px solid var(--line);padding:1rem clamp(16px,4vw,44px);color:
 @media(max-width:52rem){.course-hero,.course-setup{grid-template-columns:minmax(0,1fr)}.course-cover{max-width:42rem}.course-setup{gap:0}}
 
 #lesson-title{max-width:19ch}
-#workbench .question,.read-result,.lesson-task{
+#workbench .question,.lesson-task{
   border-left:3px solid var(--accent);
   border-radius:0 8px 8px 0;
   background:var(--soft);
   padding:16px 20px;
 }
-#workbench>.question,.read-result,.lesson-task{max-width:none;margin:24px 0}
+#workbench>.question,.lesson-task{max-width:none;margin:24px 0}
 .walkthrough{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;padding:0;list-style-position:inside;margin:16px 0 24px}
 .walkthrough li{min-width:0}
 .walkthrough li::marker{font-weight:600;color:var(--accent)}
@@ -101,7 +105,16 @@ footer{border-top:1px solid var(--line);padding:1rem clamp(16px,4vw,44px);color:
 #program #source:focus-visible{outline-offset:-3px}
 #draft-notice{font-size:.95rem;color:var(--muted)}
 .lesson-task h2{margin:0 0 12px}
-#workbench .lesson-task .question{border:0;padding:0;margin:12px 0}
+.output-heading{border-top:1px solid var(--line);padding:.6rem .7rem}
+.output-heading h3{font-size:1rem;margin:0}
+.output-heading p{margin:.25rem 0 0}
+.notice{color:var(--muted);font-size:.94rem;margin:0}
+.tool-panel{padding:0 .7rem .5rem}
+#earlier-run{padding-bottom:.7rem}
+#earlier-run pre{min-height:0}
+#guest-tools{margin-top:1.15rem;border:1px solid var(--line);border-radius:.4rem;background:var(--paper)}
+#guest-tools p{margin:.2rem 0 .35rem}
+#guest-tools .toolbar,#shell{padding-left:0;padding-right:0}
 @media(max-width:760px){.walkthrough pre{padding-inline:16px}}
 @media(max-width:720px){.layout{padding-top:24px}}
 @media(max-width:440px){h1{font-size:2.4rem;letter-spacing:-.055em}}
