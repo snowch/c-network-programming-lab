@@ -16,7 +16,7 @@ export const course = {
       "section": "Socket APIs",
       "title": "Create and bind a socket",
       "file": "socket-basics.c",
-      "focus": "static void inspect_socket",
+      "focus": "static int bind_loopback",
       "intro": "Linux socket APIs work with file descriptors. socket() creates a UDP endpoint. bind() assigns a local address and port, and getsockname() reports the address the kernel chose.",
       "question": "What local address and port does Linux assign when you request port zero?",
       "task": "Change requested_port from 0 to 4040. Run again and compare the requested port and the bound port.",
