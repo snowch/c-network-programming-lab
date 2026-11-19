@@ -1,16 +1,76 @@
 export const course = {
   "slug": "c-network-programming-lab",
   "title": "C Network Programming Lab",
-  "summary": "Linux sockets, TCP and UDP, framing, readiness and multiplexing.",
+  "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
   "instructions": "Run in Linux sends the editor contents to the guest. GCC compiles new or edited source before running the exercise. Use the console output to check your prediction.",
   "files": {
-    "network.c": "./examples/network.c"
+    "network.c": "./examples/network.c",
+    "socket-basics.c": "./examples/socket-basics.c",
+    "socket-tools.c": "./examples/socket-tools.c",
+    "tls.c": "./examples/tls.c"
   },
   "prepare": "if [ ! -x /tmp/net ] || [ /tmp/lesson-input/network.c -nt /tmp/net ]; then\n    echo 'Compiling network.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/network.c -o /tmp/net.next\n    mv /tmp/net.next /tmp/net\nfi",
   "lessons": [
     {
+      "id": "socket-api",
+      "section": "Socket APIs",
+      "title": "Create and bind a socket",
+      "file": "socket-basics.c",
+      "focus": "static void inspect_socket",
+      "intro": "Linux socket APIs work with file descriptors. socket() creates a UDP endpoint. bind() assigns a local address and port, and getsockname() reports the address the kernel chose.",
+      "question": "What local address and port does Linux assign when you request port zero?",
+      "task": "Change requested_port from 0 to 4040. Run again and compare the requested port and the bound port.",
+      "hint": "Port zero asks Linux to assign a free ephemeral port. htons() and ntohs() convert port numbers to and from network byte order.",
+      "explanation": "A valid descriptor is a nonnegative integer. The first run shows an assigned port. The second run requests port 4040 explicitly.",
+      "transfer": "Where would you inspect the error if another socket already held port 4040?",
+      "reference": [
+        "Read bind(2)",
+        "https://man7.org/linux/man-pages/man2/bind.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-basics ] || [ /tmp/lesson-input/socket-basics.c -nt /tmp/socket-basics ]; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\nfi",
+      "command": "/tmp/socket-basics socket"
+    },
+    {
+      "id": "datagram-api",
+      "section": "Socket APIs",
+      "title": "Send and receive a UDP datagram",
+      "file": "socket-basics.c",
+      "focus": "static void send_datagram",
+      "intro": "sendto() sends one datagram to a destination address. recvfrom() returns the number of bytes copied and can report the sender’s address.",
+      "question": "How does the receiver find the sender’s port even though the sender never calls bind()?",
+      "task": "Change message from ping to status. Run and compare the copied byte count and source port.",
+      "hint": "The first send makes Linux choose a local address and port for the unbound sender.",
+      "explanation": "The reply address is metadata returned by recvfrom(). The byte count is the size of the received payload, without a C string terminator.",
+      "transfer": "How would you send a reply using the address and length returned by recvfrom()?",
+      "reference": [
+        "Read recvfrom(2)",
+        "https://man7.org/linux/man-pages/man2/recvfrom.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-basics ] || [ /tmp/lesson-input/socket-basics.c -nt /tmp/socket-basics ]; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\nfi",
+      "command": "/tmp/socket-basics datagram"
+    },
+    {
+      "id": "listen-api",
+      "section": "Socket APIs",
+      "title": "Listen for and accept TCP connections",
+      "file": "socket-basics.c",
+      "focus": "static void accept_stream",
+      "intro": "A server calls listen() to accept incoming TCP connections. connect() starts a client connection. accept() returns a new descriptor for one established connection.",
+      "question": "Can the established connection still carry data after the listening descriptor closes?",
+      "task": "Change payload from A to Z. Run and check both descriptor numbers and the received byte.",
+      "hint": "The listening socket handles future arrivals. The accepted socket represents the data stream for one client.",
+      "explanation": "The two descriptors refer to different sockets. Closing the listener prevents new accepts and leaves the accepted socket available.",
+      "transfer": "Which descriptor should a server pass to recv() for each new connection?",
+      "reference": [
+        "Read accept(2)",
+        "https://man7.org/linux/man-pages/man2/accept.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-basics ] || [ /tmp/lesson-input/socket-basics.c -nt /tmp/socket-basics ]; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\nfi",
+      "command": "/tmp/socket-basics listen"
+    },
+    {
       "id": "addresses",
-      "section": "Addressing and transport",
+      "section": "Addressing and name resolution",
       "title": "Resolve a name into socket addresses",
       "intro": "A socket address combines an address family, a host address and a port. getaddrinfo() resolves a host and service into candidate addresses.",
       "question": "Which addresses can this guest use for localhost?",
@@ -27,8 +87,46 @@ export const course = {
       "file": "network.c"
     },
     {
+      "id": "ipv6",
+      "section": "Addressing and name resolution",
+      "title": "Exchange datagrams over IPv6 loopback",
+      "file": "socket-tools.c",
+      "focus": "static void ipv6_echo",
+      "intro": "An IPv6 socket uses AF_INET6 and sockaddr_in6. Its loopback address is ::1. The server uses the source address returned by recvfrom() to reply.",
+      "question": "Which fields describe an IPv6 socket endpoint, and which of them does the receiver get from recvfrom()?",
+      "task": "Change payload in ipv6_echo() from 6 to V. Run and check the response and the peer address.",
+      "hint": "The peer address and port are separate fields. The bracketed output keeps the port distinct from colons in the address.",
+      "explanation": "Both datagrams travel through IPv6 loopback. IPv4 and IPv6 use different address structures even though the send and receive APIs are the same.",
+      "transfer": "How would you pass an address candidate from getaddrinfo() to bind() without hard-coding a family?",
+      "reference": [
+        "Read ipv6(7)",
+        "https://man7.org/linux/man-pages/man7/ipv6.7.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "command": "/tmp/socket-tools ipv6"
+    },
+    {
+      "id": "dns",
+      "section": "Addressing and name resolution",
+      "title": "Send a DNS question to a local resolver",
+      "file": "socket-tools.c",
+      "focus": "static const char dns_name",
+      "intro": "DNS messages carry a transaction ID, a question and records. This lab sends a real UDP DNS packet to a local responder that serves the reserved test name echo.lab.test.",
+      "question": "What distinguishes a response containing an IPv4 address from a response for a missing name?",
+      "task": "Change dns_name to missing.lab.test. Run and compare the A record and its TTL with the NXDOMAIN result.",
+      "hint": "The response repeats the transaction ID. The low four bits of the response flags hold the response code.",
+      "explanation": "The existing name returns an A record with an IPv4 address and a time to live in seconds. NXDOMAIN reports that the requested name does not exist in the fixture.",
+      "transfer": "Why must a resolver match the transaction ID and the answering peer before using a response?",
+      "reference": [
+        "Read the DNS message format in RFC 1035",
+        "https://www.rfc-editor.org/rfc/rfc1035#section-4.1"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "command": "/tmp/socket-tools dns"
+    },
+    {
       "id": "stream",
-      "section": "Addressing and transport",
+      "section": "Stream protocols",
       "title": "Read a TCP message in pieces",
       "intro": "TCP connects two sockets and delivers a stream of bytes. The client and server use the guest’s loopback interface, so the traffic remains on this machine.",
       "question": "The client writes two bytes before attempting the rest. How many can the server’s first recv() return?",
@@ -42,24 +140,6 @@ export const course = {
         "https://man7.org/linux/man-pages/man7/tcp.7.html"
       ],
       "command": "/tmp/net stream",
-      "file": "network.c"
-    },
-    {
-      "id": "udp",
-      "section": "Addressing and transport",
-      "title": "Inspect UDP datagram boundaries",
-      "intro": "UDP delivers datagrams. Each recvmsg() consumes one datagram, and MSG_TRUNC reports that the receive buffer was too small.",
-      "question": "Will a second read return the remainder of the first datagram or the start of the next one?",
-      "focus": "static void udp",
-      "task": "Change the size of the data array in udp() from SPLIT to 8. Run and check both the copied byte count and the truncation flag.",
-      "hint": "The sender issues two sendto() calls of five bytes each.",
-      "explanation": "Each call consumes one datagram. With a two-byte buffer, both reads get the first two bytes of their own datagram. A large enough buffer preserves all five bytes.",
-      "transfer": "How would the receiver distinguish one long datagram from two short ones?",
-      "reference": [
-        "Read udp(7)",
-        "https://man7.org/linux/man-pages/man7/udp.7.html"
-      ],
-      "command": "/tmp/net udp",
       "file": "network.c"
     },
     {
@@ -97,6 +177,81 @@ export const course = {
       ],
       "command": "/tmp/net half-close",
       "file": "network.c"
+    },
+    {
+      "id": "udp",
+      "section": "Datagrams and local sockets",
+      "title": "Inspect UDP datagram boundaries",
+      "intro": "UDP delivers datagrams. Each recvmsg() consumes one datagram, and MSG_TRUNC reports that the receive buffer was too small.",
+      "question": "Will a second read return the remainder of the first datagram or the start of the next one?",
+      "focus": "static void udp",
+      "task": "Change the size of the data array in udp() from SPLIT to 8. Run and check both the copied byte count and the truncation flag.",
+      "hint": "The sender issues two sendto() calls of five bytes each.",
+      "explanation": "Each call consumes one datagram. With a two-byte buffer, both reads get the first two bytes of their own datagram. A large enough buffer preserves all five bytes.",
+      "transfer": "How would the receiver distinguish one long datagram from two short ones?",
+      "reference": [
+        "Read udp(7)",
+        "https://man7.org/linux/man-pages/man7/udp.7.html"
+      ],
+      "command": "/tmp/net udp",
+      "file": "network.c"
+    },
+    {
+      "id": "deadline",
+      "section": "Datagrams and local sockets",
+      "title": "Retry a UDP request after a deadline",
+      "file": "socket-tools.c",
+      "focus": "static void udp_deadline",
+      "intro": "UDP does not retry unanswered requests for the application. poll() measures whether a reply arrived within a deadline, and a request ID lets the application match replies.",
+      "question": "What does the client observe when the server deliberately drops the first reply?",
+      "task": "Change answer_first_attempt to 1 in udp_deadline(). Run and compare the number of attempts.",
+      "hint": "The test suppresses a reply in code. It uses the same loopback route in both cases.",
+      "explanation": "The first configuration times out and sends a second ID. When the first reply is enabled, the client receives ID 1 and stops retrying.",
+      "transfer": "How would you handle an old reply that arrives after you have already sent a newer request?",
+      "reference": [
+        "Read poll(2)",
+        "https://man7.org/linux/man-pages/man2/poll.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "command": "/tmp/socket-tools deadline"
+    },
+    {
+      "id": "unix",
+      "section": "Datagrams and local sockets",
+      "title": "Pass a descriptor over a Unix-domain socket",
+      "file": "socket-tools.c",
+      "focus": "static void descriptor_message",
+      "intro": "A Unix-domain socket connects processes on one machine. A control message with SCM_RIGHTS transfers a reference to an open file description through sendmsg() and recvmsg().",
+      "question": "Can the receiving socket get a usable pipe descriptor after the sender closes its own descriptor?",
+      "task": "Replace MSG_CMSG_CLOEXEC with 0 in recvmsg(). Run and check the flag reported for the received descriptor.",
+      "hint": "The ancillary data is separate from the ordinary message payload. It carries a reference to the pipe, whose bytes remain available through the new descriptor.",
+      "explanation": "The receiver reads the pipe even after the sender closed its handle. MSG_CMSG_CLOEXEC sets close-on-exec when Linux installs the received descriptor.",
+      "transfer": "Why would sending the same descriptor number as ordinary text fail between two independent processes?",
+      "reference": [
+        "Read unix(7)",
+        "https://man7.org/linux/man-pages/man7/unix.7.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "command": "/tmp/socket-tools unix"
+    },
+    {
+      "id": "connect-status",
+      "section": "Readiness and scale",
+      "title": "Check the result of a nonblocking connect",
+      "file": "socket-tools.c",
+      "focus": "static void connect_status",
+      "intro": "A nonblocking connect() can return EINPROGRESS. poll() reports when connection setup finishes, and getsockopt(SO_ERROR) gives the outcome.",
+      "question": "Can a connection failure also make the socket appear writable?",
+      "task": "Set accept_connections to 0. Run and inspect the SO_ERROR message.",
+      "hint": "The endpoint retains its port. Without listen(), no server is accepting TCP connections there.",
+      "explanation": "A successful connection has SO_ERROR zero. A connection to the bound but non-listening port completes with ECONNREFUSED.",
+      "transfer": "How would you distinguish a refusal from a connection attempt that outlives your own deadline?",
+      "reference": [
+        "Read connect(2)",
+        "https://man7.org/linux/man-pages/man2/connect.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "command": "/tmp/socket-tools connect"
     },
     {
       "id": "readiness",
@@ -151,6 +306,53 @@ export const course = {
       ],
       "command": "/tmp/net epoll",
       "file": "network.c"
+    },
+    {
+      "id": "tls",
+      "section": "Security and diagnostics",
+      "title": "Verify a local TLS service by name",
+      "file": "tls.c",
+      "focus": "static const char expected_host",
+      "intro": "TLS protects a byte stream and authenticates its peer. The client uses a bundled lab certificate authority to verify the server certificate and an expected DNS name.",
+      "question": "What happens if the certificate is signed by the trusted lab CA but names a different host from the one the client expects?",
+      "task": "Change expected_host to wrong.lab.test. Run and compare the successful encrypted echo with the rejected handshake.",
+      "hint": "SSL_CTX_set_verify() enables peer verification. SSL_set1_host() specifies which name the certificate must match.",
+      "explanation": "The starter verifies the certificate and echoes the message using the negotiated TLS version and cipher. A name mismatch stops the handshake before the client sends application data.",
+      "transfer": "Which part of this test would also fail if the application loaded a different certificate authority?",
+      "reference": [
+        "Read OpenSSL hostname verification",
+        "https://docs.openssl.org/3.5/man3/SSL_set1_host/"
+      ],
+      "assets": [
+        "openssl-headers.tar.gz",
+        "lab-ca.pem",
+        "lab-server.pem",
+        "lab-server-key.pem"
+      ],
+      "prepare": "mkdir -p /tmp/lab-openssl\nif [ ! -f /tmp/lab-openssl/openssl/ssl.h ]; then\n    tar -xzf /tmp/lesson-input/openssl-headers.tar.gz -C /tmp/lab-openssl\nfi\nif [ ! -x /tmp/linux-tls ] || [ /tmp/lesson-input/tls.c -nt /tmp/linux-tls ]; then\n    echo 'Compiling tls.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror -I /tmp/lab-openssl /tmp/lesson-input/tls.c -o /tmp/linux-tls.next -l:libssl.so.3 -l:libcrypto.so.3\n    mv /tmp/linux-tls.next /tmp/linux-tls\nfi",
+      "command": "cd /tmp/lesson-input\n/tmp/linux-tls"
+    },
+    {
+      "id": "packets",
+      "section": "Security and diagnostics",
+      "title": "Read an IPv4 and UDP header on loopback",
+      "file": "socket-tools.c",
+      "focus": "static void observe_packets",
+      "intro": "A Linux packet socket observes traffic at an interface. This program binds one to the guest’s loopback interface and looks for its own UDP datagram.",
+      "question": "How many bytes do the IPv4 and UDP headers add to the payload?",
+      "task": "Change payload in observe_packets() from capture to abc. Run and compare the payload, UDP length and IPv4 total length.",
+      "hint": "UDP length includes its eight-byte header. The IPv4 total length also includes the IP header.",
+      "explanation": "The generated datagram has real kernel-written headers. These length fields measure different ranges, so the three counts stay related as the payload changes.",
+      "transfer": "Which field would you check before deciding where the UDP header starts if the IPv4 header included options?",
+      "reference": [
+        "Read packet(7)",
+        "https://man7.org/linux/man-pages/man7/packet.7.html"
+      ],
+      "assets": [
+        "af_packet.ko.gz"
+      ],
+      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "command": "if ! grep -q '^af_packet ' /proc/modules; then\n    gzip -dc /tmp/lesson-input/af_packet.ko.gz >/tmp/lab-af-packet.ko\n    insmod /tmp/lab-af-packet.ko\nfi\n/tmp/socket-tools packet"
     },
     {
       "id": "capstone",

@@ -27,6 +27,10 @@ for (const lesson of course.lessons) {
   ids.add(lesson.id);
   for (const key of ['section', 'title', 'intro', 'question', 'task', 'hint', 'explanation', 'transfer', 'command'])
     assert(typeof lesson[key] === 'string' && lesson[key].trim(), lesson.id + ': ' + key);
+  for (const name of lesson.assets ?? []) {
+    assert(/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(name), 'invalid guest asset name');
+    assert(offlinePaths.has('examples/' + name), name + ' must be saved offline');
+  }
   const path = course.files[lesson.file];
   assert(path, lesson.id + ': active file must exist');
   const source = await readFile(new URL(path, dist), 'utf8');

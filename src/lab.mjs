@@ -37,7 +37,6 @@ $('theme').onclick = () => {
   save('theme', value);
 };
 
-for (const name of files) file.add(new Option(name, name));
 const starterFiles = Promise.all(files.map(async name => {
   const response = await fetch(course.files[name]);
   if (!response.ok) throw Error('Could not load ' + name);
@@ -120,7 +119,8 @@ async function showLesson() {
   source.disabled = true;
   $('run').disabled = true;
   if (await starterFiles && selection === thisSelection) {
-    showSource(lesson.file ?? files[0]);
+    file.replaceChildren(new Option(lesson.file, lesson.file));
+    showSource(lesson.file);
     source.disabled = false;
     $('run').disabled = running;
   }
@@ -235,7 +235,7 @@ $('run').onclick = async () => {
   if (running) return;
   status.textContent = 'Preparing source';
   const current = lesson;
-  const values = files.map(name => [name, valueOf(name)]);
+  const code = encoder.encode(valueOf(current.file));
   const prefix = 'run-' + (++runNumber) + '-';
   const marker = '__LAB_RESULT_' + runNumber + '__';
   running = true;
@@ -250,21 +250,26 @@ $('run').onclick = async () => {
     await boot;
     $('restart').disabled = true;
     enableShell(false);
-    for (const [name, value] of values)
-      await vm.create_file(prefix + name, encoder.encode(value));
+    const uploaded = [current.file, ...(current.assets ?? [])];
+    await vm.create_file(prefix + current.file, code);
+    for (const name of current.assets ?? []) {
+      const response = await fetch('./examples/' + name);
+      if (!response.ok) throw Error('Could not load ' + name);
+      await vm.create_file(prefix + name, new Uint8Array(await response.arrayBuffer()));
+    }
     resultMarker = marker;
     const input = '/tmp/lesson-input/';
-    const temporary = files.map(name => '/exchange/' + prefix + name);
+    const temporary = uploaded.map(name => '/exchange/' + prefix + name);
     const scriptName = '/exchange/' + prefix + 'exercise.sh';
     const setup = [
       'set -e',
       `trap 'rm -f ${temporary.join(' ')} ${scriptName}' EXIT`,
       'trap "exit 130" INT TERM',
       'mkdir -p ' + input,
-      ...files.map((name, index) =>
+      ...uploaded.map((name, index) =>
         `cmp -s ${temporary[index]} ${input}${name} || cp ${temporary[index]} ${input}${name}`)
     ];
-    const script = [...setup, course.prepare, current.command].join('\n') + '\n';
+    const script = [...setup, current.prepare ?? course.prepare, current.command].join('\n') + '\n';
     await vm.create_file(prefix + 'exercise.sh', encoder.encode(script));
     terminalText = '';
     line = '';
