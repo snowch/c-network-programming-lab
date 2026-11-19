@@ -36,7 +36,6 @@ $('theme').onclick = () => {
   theme(value);
   save('theme', value);
 };
-if (matchMedia('(max-width: 46rem)').matches) $('course-menu').open = false;
 
 for (const name of files) file.add(new Option(name, name));
 const starterFiles = Promise.all(files.map(async name => {
@@ -57,16 +56,17 @@ function showSource(name) {
   activeFile = name;
   file.value = name;
   source.value = valueOf(name) ?? '';
+  source.scrollTop = 0;
+  source.scrollLeft = 0;
   const needle = lesson.focus;
   if (needle && name === lesson.file) {
     const start = source.value.indexOf(needle);
     if (start >= 0) {
       source.setSelectionRange(start, start);
       const row = source.value.slice(0, start).split('\n').length;
-      source.scrollTop = Math.max(0, (row - 4) * 23);
+      const lineHeight = parseFloat(getComputedStyle(source).lineHeight);
+      source.scrollTop = Math.max(0, (row - 4) * lineHeight);
     }
-  } else {
-    source.scrollTop = 0;
   }
 }
 source.oninput = () => {
@@ -83,19 +83,17 @@ $('restore').onclick = () => {
   showSource(activeFile);
 };
 
-let section;
+const picker = $('lesson-picker');
+let group;
 for (const item of course.lessons) {
-  if (item.section !== section) {
-    section = item.section;
-    const title = document.createElement('h2');
-    title.textContent = section;
-    $('lessons').append(title);
+  if (group?.label !== item.section) {
+    group = document.createElement('optgroup');
+    group.label = item.section;
+    picker.append(group);
   }
-  const link = document.createElement('a');
-  link.href = '#' + item.id;
-  link.textContent = item.title;
-  $('lessons').append(link);
+  group.append(new Option(item.title, item.id));
 }
+picker.onchange = () => { location.hash = picker.value; };
 
 async function showLesson() {
   const index = course.lessons.findIndex(item => '#' + item.id === location.hash);
@@ -110,10 +108,7 @@ async function showLesson() {
   const reference = $('reference');
   reference.href = lesson.reference[1];
   reference.textContent = lesson.reference[0];
-  for (const link of $('lessons').querySelectorAll('a')) {
-    link.toggleAttribute('aria-current', link.hash === '#' + lesson.id);
-    if (link.hash === '#' + lesson.id) link.setAttribute('aria-current', 'page');
-  }
+  picker.value = lesson.id;
   $('next-lesson').replaceChildren();
   for (const [other, label] of [[course.lessons[Math.max(0, index) - 1], 'Previous'], [course.lessons[Math.max(0, index) + 1], 'Next']]) {
     if (!other) continue;
@@ -134,7 +129,6 @@ addEventListener('hashchange', () => {
   if (location.hash === '#main') return;
   void showLesson();
   $('main').scrollIntoView();
-  if (matchMedia('(max-width: 46rem)').matches) $('course-menu').open = false;
 });
 void showLesson();
 

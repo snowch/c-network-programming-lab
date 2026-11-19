@@ -17,16 +17,14 @@ button,select{min-height:42px;padding:.34rem .68rem;border:1px solid var(--line)
 button:hover:enabled{border-color:var(--accent)}
 button:disabled{opacity:.5;cursor:default}
 .primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
-.layout{display:grid;grid-template-columns:minmax(14rem,20rem) minmax(0,1fr);gap:clamp(1.5rem,5vw,5rem);max-width:88rem;margin:0 auto;padding:clamp(1.5rem,4vw,3.25rem) clamp(1rem,4vw,3rem)}
-main{min-width:0}
-article{max-width:58rem}
-aside{border-right:1px solid var(--line);padding-right:1rem}
-aside summary{font-weight:700}
+.layout{max-width:88rem;margin:0 auto;padding:clamp(1.5rem,4vw,3.25rem) clamp(1rem,4vw,3rem)}
+.lesson-picker{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem .65rem;margin-bottom:1.25rem}
+.lesson-picker label{font-weight:600}
+.lesson-picker select{width:min(100%,32rem);min-width:0;text-overflow:ellipsis}
+article p{max-width:72ch}
 summary{cursor:pointer;padding:.45rem 0;width:fit-content}
 nav a{display:block;padding:.48rem .65rem;border-radius:.36rem;text-decoration:none}
 nav a:hover{background:var(--soft)}
-nav a[aria-current]{background:var(--soft);font-weight:700}
-nav h2{font-size:.9rem;margin:1.1rem 0 .25rem;color:var(--muted)}
 .section-label{margin:0;color:var(--accent);font-weight:600}
 h1{font-size:clamp(2rem,5vw,3.65rem);line-height:1.08;letter-spacing:-.045em;margin:.36rem 0 .8rem}
 h2{font-size:clamp(1.3rem,3vw,1.65rem);line-height:1.2;margin:1.85rem 0 .55rem}
@@ -46,4 +44,4 @@ pre{min-height:8rem;max-height:21rem;overflow:auto;white-space:pre-wrap;overflow
 .offline-status{max-width:88rem;margin:.65rem auto 0;padding:0 clamp(1rem,4vw,3rem)}
 #next-lesson{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:2rem;padding-top:.65rem;gap:1rem}
 footer{border-top:1px solid var(--line);padding:1rem clamp(1rem,4vw,3rem);color:var(--muted);font-size:.93rem}
-@media(max-width:46rem){.layout{grid-template-columns:1fr;gap:1.1rem}aside{border-right:0;border-bottom:1px solid var(--line);padding:0 0 .55rem}.header-inner{align-items:flex-start}#command{min-width:9rem}}
+@media(max-width:46rem){.header-inner{align-items:flex-start}#command{min-width:9rem}}
