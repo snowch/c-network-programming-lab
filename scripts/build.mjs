@@ -15,7 +15,7 @@ const escape = value => String(value).replace(/[&<>"']/g, character => ({
 const sections = Map.groupBy(course.lessons, lesson => lesson.section);
 const outline = [...sections].map(([section, lessons]) =>
   `<section><h3>${escape(section)}</h3><ul>${lessons.map(lesson =>
-    `<li><a href="#${escape(lesson.id)}">${escape(lesson.title)}</a></li>`
+    `<li><a href="#${escape(lesson.id)}">${escape(lesson.title)}${lesson.sectionCapstone ? ' · Section capstone' : ''}</a></li>`
   ).join('')}</ul></section>`
 ).join('\n');
 const fields = { ...course.overview, title: course.title, firstLesson: course.lessons[0].id };
@@ -50,6 +50,7 @@ await cp(at('../src/style.css'), new URL('style.css', dist));
 await cp(at('../src/lab.mjs'), new URL('lab.mjs', dist));
 await cp(at('../content/course.mjs'), new URL('course.mjs', dist));
 await cp(at('../content/references.mjs'), new URL('references.mjs', dist));
+await cp(at('../content/concepts.mjs'), new URL('concepts.mjs', dist));
 await cp(at('../runtime/files/'), new URL('runtime/', dist), { recursive: true });
 await cp(at('../examples/'), new URL('examples/', dist), { recursive: true });
 await cp(at('../assets/fonts/'), new URL('fonts/', dist), { recursive: true });

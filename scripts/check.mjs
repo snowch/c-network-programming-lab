@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { course } from '../content/course.mjs';
 import { references } from '../dist/references.mjs';
+import { concepts } from '../dist/concepts.mjs';
 
 const dist = new URL('../dist/', import.meta.url);
 const content = await readFile(new URL('offline.js', dist), 'utf8');
@@ -15,7 +16,7 @@ for (const name of guest.parts) {
   assert(offlinePaths.has('runtime/' + name), name + ' must be saved offline');
 }
 assert.equal(bytes, guest.bytes);
-for (const path of ['index.html', 'style.css', 'lab.mjs', 'course.mjs', 'walkthroughs.mjs', 'references.mjs', 'runtime/libv86.mjs',
+for (const path of ['index.html', 'style.css', 'lab.mjs', 'course.mjs', 'walkthroughs.mjs', 'references.mjs', 'concepts.mjs', 'runtime/libv86.mjs',
   'runtime/v86.wasm', 'runtime/vmlinuz-virt', 'runtime/parts.json',
   'runtime/seabios.bin', 'runtime/vgabios.bin', 'fonts/plex-sans.woff2', 'fonts/plex-mono-400.woff2'])
   assert(offlinePaths.has(path), path + ' must be saved offline');
@@ -31,6 +32,11 @@ const ids = new Set();
 for (const lesson of course.lessons) {
   assert(!ids.has(lesson.id), 'duplicate lesson ID');
   ids.add(lesson.id);
+  const concept = concepts[lesson.id];
+  assert(concept?.title?.trim() && concept.caption?.trim(), lesson.id + ': concept explanation is required');
+  assert(concept.nodes?.length === 3, lesson.id + ': concept diagram needs three nodes');
+  for (const [label, detail] of concept.nodes)
+    assert(label?.trim() && detail?.trim(), lesson.id + ': concept node must be labelled');
   const entries = references[lesson.id];
   assert(Array.isArray(entries) && entries.length >= 2, lesson.id + ': expected API references');
   const urls = new Set();
@@ -60,4 +66,15 @@ for (const lesson of course.lessons) {
   assert(source.includes(lesson.focus), lesson.id + ': intended code must exist');
 }
 assert.equal(Object.keys(references).length, ids.size, 'one reference list per lesson');
+assert.equal(Object.keys(concepts).length, ids.size, 'one concept diagram per lesson');
+for (const [section, lessons] of Map.groupBy(course.lessons, lesson => lesson.section)) {
+  if (section === 'Capstone' || section === 'Capstones') continue;
+  const capstones = lessons.filter(lesson => lesson.sectionCapstone);
+  assert.deepEqual(capstones, [lessons.at(-1)], section + ': close with a section capstone');
+  const capstone = capstones[0];
+  assert(capstone.buildsOn?.length, section + ': section capstone needs prerequisites');
+  const earlier = new Set(lessons.slice(0, -1).map(lesson => lesson.id));
+  for (const prerequisite of capstone.buildsOn)
+    assert(earlier.has(prerequisite), section + ': prerequisites must come from this section');
+}
 console.log(`Checked ${ids.size} lessons and ${offlinePaths.size} offline assets`);

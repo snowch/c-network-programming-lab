@@ -1,6 +1,7 @@
 import { course } from './course.mjs';
 import { tutorials } from './walkthroughs.mjs';
 import { references } from './references.mjs';
+import { concepts } from './concepts.mjs';
 
 const $ = id => document.getElementById(id);
 const source = $('source');
@@ -167,7 +168,7 @@ for (const item of course.lessons) {
     group.label = item.section;
     picker.append(group);
   }
-  group.append(new Option(item.title, item.id));
+  group.append(new Option(item.title + (item.sectionCapstone ? ' · Section capstone' : ''), item.id));
 }
 picker.onchange = () => { location.hash = picker.value; };
 
@@ -184,6 +185,21 @@ function showReferences(id) {
     detail.textContent = note;
     item.append(link, detail);
     return item;
+  }));
+}
+
+function showConcept(id) {
+  const concept = concepts[id];
+  $('concept-title').textContent = concept.title;
+  $('concept-caption').textContent = concept.caption;
+  $('concept-stages').replaceChildren(...concept.nodes.map(([label, detail]) => {
+    const node = document.createElement('li');
+    const name = document.createElement('strong');
+    const description = document.createElement('span');
+    name.textContent = label;
+    description.textContent = detail;
+    node.append(name, description);
+    return node;
   }));
 }
 
@@ -230,6 +246,8 @@ async function showLesson(index) {
     item.append(link);
     return item;
   }));
+  if (lesson.sectionCapstone) $('section').textContent += ' · Section capstone';
+  showConcept(lesson.id);
   showReferences(lesson.id);
   picker.value = lesson.id;
   $('next-lesson').replaceChildren();
@@ -237,7 +255,8 @@ async function showLesson(index) {
     if (!other) continue;
     const link = document.createElement('a');
     link.href = '#' + other.id;
-    const followsThisLesson = label === 'Next' && other.buildsOn?.includes(lesson.id);
+    const followsThisLesson = label === 'Next' &&
+      (other.buildsOn?.includes(lesson.id) || (other.sectionCapstone && other.section === lesson.section));
     link.textContent = (followsThisLesson ? 'Continue to the capstone' : label) + ' · ' + other.title;
     $('next-lesson').append(link);
   }

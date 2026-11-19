@@ -2,7 +2,7 @@
 
 The Sites design guidance and the streaming lab’s UX and learning-design guides informed the workbench. The opening dedicates one runnable program to socket creation and another to binding before reading back an assigned port. Each lesson starts with short excerpts taken from the starter source. The run shows actual guest output, with a reading prompt and a focused edit before the transfer question. Each lesson links to a primary Linux reference.
 
-The lesson picker, previous and next navigation, and browser drafts were checked on the published single-column workbench. Width checks included 1280, 768, 390 and 320 pixels. `npm run check` validates 22 lessons, source excerpts and the offline inventory. All 22 lesson programs ran successfully in the packaged Alpine guest with external networking disabled.
+The lesson picker, previous and next navigation, and browser drafts were checked on the published single-column workbench. Width checks included 1280, 768, 390 and 320 pixels. `npm run check` validates 27 lessons, source excerpts and the offline inventory. All 22 lesson programs ran successfully in the packaged Alpine guest with external networking disabled.
 
 The course uses a real Alpine x86 guest. The TCP short read is an executable program, and the guest's timings depend on the host, browser and emulator. Offline use requires saving the course in that browser profile before disconnecting.
 
@@ -19,3 +19,5 @@ The review checked those findings against `2261e49`, which gives each lesson its
 - The existing source-byte build check remains in use. The previous source stamp is removed first when replacing a successful binary so an interruption cannot incorrectly match it with earlier source.
 
 Checks for the focused programs use the source editor and Linux guest in Chromium. Responsive checks use 320, 390, 768 and 1440 pixels in light and dark configurations and exercise the skip link, edit button, theme control, Linux shell disclosure and offline reference notes. All 32 distinct external manual and protocol URLs responded successfully in the opening review. Learning effectiveness remains unmeasured.
+
+The 6 section capstones completed in the packaged Alpine guest with networking disabled. Build checks verify that each capstone closes its section and links only to earlier lessons in that section. All 27 concept diagrams were checked at desktop and narrow mobile widths.

@@ -1,4 +1,89 @@
 export const walkthroughs = {
+  "socket-apis-capstone": {
+    "edit": "const char reply[]",
+    "steps": [
+      {
+        "heading": "Discover the listening endpoint",
+        "text": "The address initially contains port zero. Reading it back gives the real destination for the request.",
+        "anchor": "require(bind(server,",
+        "lines": 3
+      },
+      {
+        "heading": "Reply to the observed sender",
+        "text": "The server uses the address and length filled by recvfrom().",
+        "anchor": "const char reply[]",
+        "lines": 4
+      }
+    ]
+  },
+  "addressing-capstone": {
+    "edit": "const char host[]",
+    "steps": [
+      {
+        "heading": "Ask for an IPv6 datagram endpoint",
+        "text": "The hints constrain the address family. Service zero leaves port selection to bind.",
+        "anchor": "struct addrinfo hints",
+        "lines": 5
+      },
+      {
+        "heading": "Use the resolved address",
+        "text": "Bind to the selected IPv6 address, then query the real port.",
+        "anchor": "socklen_t length = sizeof destination;",
+        "lines": 5
+      }
+    ]
+  },
+  "stream-capstone": {
+    "edit": "const char request[]",
+    "steps": [
+      {
+        "heading": "Decode the length and keep the first piece",
+        "text": "The header describes the complete request, even when the sender has only sent two bytes so far.",
+        "anchor": "uint32_t length = ntohl(header);",
+        "lines": 4
+      },
+      {
+        "heading": "Finish the request and wait for the reply",
+        "text": "After the half-close, the server collects the remaining bytes and checks EOF.",
+        "anchor": "send_all(client, request + 2,",
+        "lines": 6
+      }
+    ]
+  },
+  "datagram-capstone": {
+    "edit": "char data[8];",
+    "steps": [
+      {
+        "heading": "Pass and close the descriptor",
+        "text": "The queued Unix socket message keeps a reference while the receiver obtains a new descriptor.",
+        "anchor": "require(sendmsg(channel[0]",
+        "lines": 5
+      },
+      {
+        "heading": "Read a datagram through the new descriptor",
+        "text": "Wait for input and pass a bounded buffer to recvmsg().",
+        "anchor": "ready(receiver, POLLIN);",
+        "lines": 6
+      }
+    ]
+  },
+  "tls-diagnostics-capstone": {
+    "edit": "static const char expected_host[]",
+    "steps": [
+      {
+        "heading": "Keep packet reads on loopback",
+        "text": "Bind the packet descriptor to the lo interface before connecting.",
+        "anchor": "int capture = socket(AF_PACKET",
+        "lines": 6
+      },
+      {
+        "heading": "Correlate TCP and TLS evidence",
+        "text": "The observed source and destination ports must match this connection. Certificate checking has its own result.",
+        "anchor": "if (tcp.source == client",
+        "lines": 4
+      }
+    ]
+  },
   "first-recv": {
     "edit": "const char first_part[]",
     "steps": [

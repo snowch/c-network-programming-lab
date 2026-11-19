@@ -14,6 +14,8 @@ Capstone sections link back to the smaller exercises and open the complete runna
 
 ## Lessons
 
+Each teaching section ends with a capstone that combines its skills. Each lesson opens with a concept diagram.
+
 ### Socket APIs
 
 - [Create a UDP socket](https://snowch.github.io/c-network-programming-lab/#create-socket)
@@ -21,12 +23,14 @@ Capstone sections link back to the smaller exercises and open the complete runna
 - [Read the port Linux chose](https://snowch.github.io/c-network-programming-lab/#socket-api)
 - [Send and receive a UDP datagram](https://snowch.github.io/c-network-programming-lab/#datagram-api)
 - [Listen for and accept TCP connections](https://snowch.github.io/c-network-programming-lab/#listen-api)
+- [Build a UDP request and reply](https://snowch.github.io/c-network-programming-lab/#socket-apis-capstone) · Section capstone
 
 ### Addressing and name resolution
 
 - [Resolve a name into socket addresses](https://snowch.github.io/c-network-programming-lab/#addresses)
 - [Exchange datagrams over IPv6 loopback](https://snowch.github.io/c-network-programming-lab/#ipv6)
 - [Send a DNS question to a local responder](https://snowch.github.io/c-network-programming-lab/#dns)
+- [Resolve a name and use its IPv6 address](https://snowch.github.io/c-network-programming-lab/#addressing-capstone) · Section capstone
 
 ### Stream protocols
 
@@ -34,24 +38,27 @@ Capstone sections link back to the smaller exercises and open the complete runna
 - [Read a TCP message in pieces](https://snowch.github.io/c-network-programming-lab/#stream)
 - [Decode length-prefixed messages](https://snowch.github.io/c-network-programming-lab/#frames)
 - [Finish one direction of a connection](https://snowch.github.io/c-network-programming-lab/#half-close)
+- [Assemble a request and read a reply after EOF](https://snowch.github.io/c-network-programming-lab/#stream-capstone) · Section capstone
 
 ### Datagrams and local sockets
 
 - [Inspect UDP datagram boundaries](https://snowch.github.io/c-network-programming-lab/#udp)
 - [Retry a UDP request after a deadline](https://snowch.github.io/c-network-programming-lab/#deadline)
 - [Pass a descriptor over a Unix-domain socket](https://snowch.github.io/c-network-programming-lab/#unix)
+- [Hand off a UDP socket over a Unix socket](https://snowch.github.io/c-network-programming-lab/#datagram-capstone) · Section capstone
 
 ### Readiness and scale
 
 - [Check the result of a nonblocking connect](https://snowch.github.io/c-network-programming-lab/#connect-status)
 - [Wait for a nonblocking socket](https://snowch.github.io/c-network-programming-lab/#readiness)
 - [Resume a write after backpressure](https://snowch.github.io/c-network-programming-lab/#backpressure)
-- [Serve several TCP peers](https://snowch.github.io/c-network-programming-lab/#epoll)
+- [Serve several TCP peers](https://snowch.github.io/c-network-programming-lab/#epoll) · Section capstone
 
 ### Security and diagnostics
 
 - [Verify a local TLS service by name](https://snowch.github.io/c-network-programming-lab/#tls)
 - [Read an IPv4 and UDP header on loopback](https://snowch.github.io/c-network-programming-lab/#packets)
+- [Correlate a TLS connection with loopback packets](https://snowch.github.io/c-network-programming-lab/#tls-diagnostics-capstone) · Section capstone
 
 ### Capstone
 

@@ -26,6 +26,11 @@ const sockopt = man('getsockopt.2', 'At SOL_SOCKET, getsockopt(SO_ERROR) retriev
 const epoll = man('epoll.7', 'Register descriptors with epoll_ctl(), then collect ready events with epoll_wait(). Use the event data to find the state for each peer.', 'epoll_create1(), epoll_ctl(), epoll_wait()');
 
 export const references = {
+  "socket-apis-capstone": [socket, bind, localAddress, send, recv],
+  "addressing-capstone": [man("getaddrinfo.3", "Select an address family and socket type, then use the returned address."), localAddress, man("ipv6.7", "The IPv6 loopback address is ::1.")],
+  "stream-capstone": [byteOrder, recv, shutdown],
+  "datagram-capstone": [man("unix.7", "SCM_RIGHTS transfers a reference to an existing open object."), poll, recv],
+  "tls-diagnostics-capstone": [ssl("SSL_set1_host", "Set the server name that certificate verification should check."), man("packet.7", "Read packets on the selected guest interface."), man("tcp.7", "TCP carries the encrypted application stream.")],
   "first-recv": [send, recv],
   'create-socket': [socket, close],
   'bind-socket': [bind, byteOrder, socket],

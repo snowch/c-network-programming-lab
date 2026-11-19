@@ -8,6 +8,11 @@ export const course = {
   "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
   "instructions": "The page opens the lesson source automatically. Select Run in Linux to build and run the program in the guest. On your first visit, leave the starter source as it is.",
   "files": {
+    "tls-diagnostics-capstone.c": "./examples/tls-diagnostics-capstone.c",
+    "datagram-capstone.c": "./examples/datagram-capstone.c",
+    "stream-capstone.c": "./examples/stream-capstone.c",
+    "addressing-capstone.c": "./examples/addressing-capstone.c",
+    "socket-apis-capstone.c": "./examples/socket-apis-capstone.c",
     "first-recv.c": "./examples/first-recv.c",
     "network.c": "./examples/network.c",
     "socket-basics.c": "./examples/socket-basics.c",
@@ -99,6 +104,33 @@ export const course = {
       "evidence": "In Run output, compare “listening descriptor” with “connected descriptor”. Then read the byte in “accepted connection received”."
     },
     {
+      "id": "socket-apis-capstone",
+      "section": "Socket APIs",
+      "sectionCapstone": true,
+      "buildsOn": [
+        "create-socket",
+        "bind-socket",
+        "socket-api",
+        "datagram-api"
+      ],
+      "title": "Build a UDP request and reply",
+      "file": "socket-apis-capstone.c",
+      "focus": "const char reply[]",
+      "intro": "Put a UDP server and client on loopback. Linux chooses the server port. The server uses the sender address from the request to send a reply.",
+      "question": "Which port belongs to the server, and where does the server get the port for its reply?",
+      "task": "Change the reply from pong to ready. Run again and check the verified reply.",
+      "hint": "The request goes to the endpoint filled in by getsockname(). The reply goes to the endpoint filled in by recvfrom().",
+      "explanation": "The server’s bind chooses its local port. Linux assigns the client a different local port when it sends. recvfrom() provides that source endpoint to the server.",
+      "transfer": "How would the client report a reply from an unexpected source port?",
+      "evidence": "Find the server port, the sender port, and “client verified pong”. The port numbers can change between runs.",
+      "support": "socket-support.h",
+      "assets": [
+        "socket-support.h"
+      ],
+      "prepare": "if [ ! -x /tmp/lab-socket-apis-capstone ] || ! cmp -s /tmp/lesson-input/socket-apis-capstone.c /tmp/lab-socket-apis-capstone.source || ! cmp -s /tmp/lesson-input/socket-support.h /tmp/lab-socket-apis-capstone.header; then\n    echo 'Compiling socket-apis-capstone.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/socket-apis-capstone.c -o /tmp/lab-socket-apis-capstone.next\n    cp /tmp/lesson-input/socket-apis-capstone.c /tmp/lab-socket-apis-capstone.source.next\n    cp /tmp/lesson-input/socket-support.h /tmp/lab-socket-apis-capstone.header.next\n    rm -f /tmp/lab-socket-apis-capstone.source\n    mv /tmp/lab-socket-apis-capstone.next /tmp/lab-socket-apis-capstone\n    mv /tmp/lab-socket-apis-capstone.header.next /tmp/lab-socket-apis-capstone.header\n    mv /tmp/lab-socket-apis-capstone.source.next /tmp/lab-socket-apis-capstone.source\nfi",
+      "command": "/tmp/lab-socket-apis-capstone"
+    },
+    {
       "id": "addresses",
       "section": "Addressing and name resolution",
       "title": "Resolve a name into socket addresses",
@@ -144,6 +176,31 @@ export const course = {
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source.next\n    rm -f /tmp/socket-tools.source\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    mv /tmp/socket-tools.source.next /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools dns",
       "evidence": "In Run output, read the requested name and the A record, which contains an IPv4 address. The TTL, or time to live, says how many seconds a resolver may cache that answer."
+    },
+    {
+      "id": "addressing-capstone",
+      "section": "Addressing and name resolution",
+      "sectionCapstone": true,
+      "buildsOn": [
+        "addresses",
+        "ipv6"
+      ],
+      "title": "Resolve a name and use its IPv6 address",
+      "file": "addressing-capstone.c",
+      "focus": "const char host[]",
+      "intro": "Resolve localhost to an IPv6 endpoint, bind the receiver, and exchange a byte on that endpoint.",
+      "question": "Which parts of the destination come from the resolver and which part does Linux select at bind time?",
+      "task": "Change the host from localhost to ::1. Run again and compare the printed endpoint and the received byte.",
+      "hint": "Both inputs reach the same loopback address. The port may change between runs.",
+      "explanation": "getaddrinfo() supplies the IPv6 address and requested service port. getsockname() returns the actual port after binding.",
+      "transfer": "What other fields would you compare if you allowed both IPv4 and IPv6 results?",
+      "evidence": "Look for [::1] and “received R from IPv6 loopback”.",
+      "support": "socket-support.h",
+      "assets": [
+        "socket-support.h"
+      ],
+      "prepare": "if [ ! -x /tmp/lab-addressing-capstone ] || ! cmp -s /tmp/lesson-input/addressing-capstone.c /tmp/lab-addressing-capstone.source || ! cmp -s /tmp/lesson-input/socket-support.h /tmp/lab-addressing-capstone.header; then\n    echo 'Compiling addressing-capstone.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/addressing-capstone.c -o /tmp/lab-addressing-capstone.next\n    cp /tmp/lesson-input/addressing-capstone.c /tmp/lab-addressing-capstone.source.next\n    cp /tmp/lesson-input/socket-support.h /tmp/lab-addressing-capstone.header.next\n    rm -f /tmp/lab-addressing-capstone.source\n    mv /tmp/lab-addressing-capstone.next /tmp/lab-addressing-capstone\n    mv /tmp/lab-addressing-capstone.header.next /tmp/lab-addressing-capstone.header\n    mv /tmp/lab-addressing-capstone.source.next /tmp/lab-addressing-capstone.source\nfi",
+      "command": "/tmp/lab-addressing-capstone"
     },
     {
       "id": "first-recv",
@@ -212,6 +269,32 @@ export const course = {
       "evidence": "Read “server read … bytes followed by EOF” and “client still receives” in Run output. One line describes the request and the other describes the reply."
     },
     {
+      "id": "stream-capstone",
+      "section": "Stream protocols",
+      "sectionCapstone": true,
+      "buildsOn": [
+        "stream",
+        "frames",
+        "half-close"
+      ],
+      "title": "Assemble a request and read a reply after EOF",
+      "file": "stream-capstone.c",
+      "focus": "const char request[]",
+      "intro": "Send a length-prefixed request in two pieces and end the outgoing stream. The server assembles the frame and replies after seeing EOF.",
+      "question": "How does the server tell the end of the frame from the end of the byte stream?",
+      "task": "Change hello to weekend. Run again and compare the decoded length and the reply.",
+      "hint": "The frame header records the length of the string in bytes. EOF becomes visible once the last byte has been read.",
+      "explanation": "The prefix tells the server how many payload bytes to collect. The client’s half-close produces EOF for a later read while keeping the reply direction open.",
+      "transfer": "Which check would catch a client that half-closed before sending all the bytes announced in its header?",
+      "evidence": "Find the assembled frame length and contents, then EOF and the verified reply.",
+      "support": "tcp-support.h",
+      "assets": [
+        "tcp-support.h"
+      ],
+      "prepare": "if [ ! -x /tmp/lab-stream-capstone ] || ! cmp -s /tmp/lesson-input/stream-capstone.c /tmp/lab-stream-capstone.source || ! cmp -s /tmp/lesson-input/tcp-support.h /tmp/lab-stream-capstone.header; then\n    echo 'Compiling stream-capstone.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/stream-capstone.c -o /tmp/lab-stream-capstone.next\n    cp /tmp/lesson-input/stream-capstone.c /tmp/lab-stream-capstone.source.next\n    cp /tmp/lesson-input/tcp-support.h /tmp/lab-stream-capstone.header.next\n    rm -f /tmp/lab-stream-capstone.source\n    mv /tmp/lab-stream-capstone.next /tmp/lab-stream-capstone\n    mv /tmp/lab-stream-capstone.header.next /tmp/lab-stream-capstone.header\n    mv /tmp/lab-stream-capstone.source.next /tmp/lab-stream-capstone.source\nfi",
+      "command": "/tmp/lab-stream-capstone"
+    },
+    {
       "id": "udp",
       "section": "Datagrams and local sockets",
       "title": "Inspect UDP datagram boundaries",
@@ -257,6 +340,32 @@ export const course = {
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source.next\n    rm -f /tmp/socket-tools.source\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    mv /tmp/socket-tools.source.next /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools unix",
       "evidence": "Read “passed pipe read” and “close-on-exec” in Run output. The latter says whether Linux will close the new descriptor when the receiving program runs a different executable."
+    },
+    {
+      "id": "datagram-capstone",
+      "section": "Datagrams and local sockets",
+      "sectionCapstone": true,
+      "buildsOn": [
+        "udp",
+        "deadline",
+        "unix"
+      ],
+      "title": "Hand off a UDP socket over a Unix socket",
+      "file": "datagram-capstone.c",
+      "focus": "char data[8];",
+      "intro": "Transfer a bound UDP socket over a Unix socket. Close the original descriptor, then wait for and receive a datagram using the new one.",
+      "question": "Can a receiver still read the datagram after the original descriptor closes?",
+      "task": "Change the receive buffer from 8 bytes to 2. Run again and compare the bytes and truncation flag.",
+      "hint": "A Unix socket message can carry a reference to an existing socket. The next recvmsg reads one UDP datagram.",
+      "explanation": "The control message keeps the bound socket alive and the receiving descriptor refers to it. A short UDP buffer copies the prefix and discards the rest of the datagram.",
+      "transfer": "How could a receiver acknowledge a handoff before the original owner closes its descriptor?",
+      "evidence": "Look for “handed-off socket received ready, truncated=0”. The edited run reports “re” and truncation.",
+      "support": "socket-support.h",
+      "assets": [
+        "socket-support.h"
+      ],
+      "prepare": "if [ ! -x /tmp/lab-datagram-capstone ] || ! cmp -s /tmp/lesson-input/datagram-capstone.c /tmp/lab-datagram-capstone.source || ! cmp -s /tmp/lesson-input/socket-support.h /tmp/lab-datagram-capstone.header; then\n    echo 'Compiling datagram-capstone.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/datagram-capstone.c -o /tmp/lab-datagram-capstone.next\n    cp /tmp/lesson-input/datagram-capstone.c /tmp/lab-datagram-capstone.source.next\n    cp /tmp/lesson-input/socket-support.h /tmp/lab-datagram-capstone.header.next\n    rm -f /tmp/lab-datagram-capstone.source\n    mv /tmp/lab-datagram-capstone.next /tmp/lab-datagram-capstone\n    mv /tmp/lab-datagram-capstone.header.next /tmp/lab-datagram-capstone.header\n    mv /tmp/lab-datagram-capstone.source.next /tmp/lab-datagram-capstone.source\nfi",
+      "command": "/tmp/lab-datagram-capstone"
     },
     {
       "id": "connect-status",
@@ -306,6 +415,8 @@ export const course = {
     },
     {
       "id": "epoll",
+      "sectionCapstone": true,
+      "buildsOn": ["readiness", "backpressure"],
       "section": "Readiness and scale",
       "title": "Serve several TCP peers",
       "intro": "A peer is the endpoint at the other end of a connection. epoll tracks readiness across multiple descriptors. The example uses level-triggered readiness, which can report a socket again while it still has unread data.",
@@ -359,6 +470,36 @@ export const course = {
       "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source.next\n    rm -f /tmp/socket-tools.source\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    mv /tmp/socket-tools.source.next /tmp/socket-tools.source\nfi",
       "command": "if ! grep -q '^af_packet ' /proc/modules; then\n    gzip -dc /tmp/lesson-input/af_packet.ko.gz >/tmp/lab-af-packet.ko\n    insmod /tmp/lab-af-packet.ko\nfi\n/tmp/socket-tools packet",
       "evidence": "Read “IPv4 total”, “UDP total” and “payload” in Run output. Subtract the payload from the UDP total, then subtract the UDP total from the IPv4 total."
+    },
+    {
+      "id": "tls-diagnostics-capstone",
+      "section": "Security and diagnostics",
+      "sectionCapstone": true,
+      "buildsOn": [
+        "tls",
+        "packets"
+      ],
+      "title": "Correlate a TLS connection with loopback packets",
+      "file": "tls-diagnostics-capstone.c",
+      "focus": "static const char expected_host[]",
+      "intro": "Run the TLS echo and observe its TCP traffic through a loopback packet socket. Match the client and server ports in the packet headers.",
+      "question": "Can the packet capture find the connection even when the certificate name check fails?",
+      "task": "Change echo.lab.test to wrong.lab.test and run. Check which output proves the TLS request was rejected and which still proves TCP traffic occurred.",
+      "hint": "The connection begins before the client verifies the certificate. Matching TCP ports alone says nothing about the TLS identity check.",
+      "explanation": "In both cases the packet socket observes TCP traffic with the same pair of endpoints as the connected socket. A mismatched name stops the TLS handshake and prevents the application echo.",
+      "transfer": "What observation would let you distinguish a failure to establish TCP from a TLS identity failure?",
+      "evidence": "Find the verified name and encrypted echo, then the observed TCP port pair. After the edit, look for a rejection and a TCP observation.",
+      "support": "tls-support.h",
+      "assets": [
+        "tls-support.h",
+        "openssl-headers.tar.gz",
+        "lab-ca.pem",
+        "lab-server.pem",
+        "lab-server-key.pem",
+        "af_packet.ko.gz"
+      ],
+      "prepare": "mkdir -p /tmp/lab-openssl\nif [ ! -f /tmp/lab-openssl/openssl/ssl.h ]; then\n    tar -xzf /tmp/lesson-input/openssl-headers.tar.gz -C /tmp/lab-openssl\nfi\nif [ ! -x /tmp/lab-tls-diagnostics-capstone ] || ! cmp -s /tmp/lesson-input/tls-diagnostics-capstone.c /tmp/lab-tls-diagnostics-capstone.source; then\n    echo 'Compiling tls-diagnostics-capstone.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror -I /tmp/lab-openssl /tmp/lesson-input/tls-diagnostics-capstone.c -o /tmp/lab-tls-diagnostics-capstone.next -l:libssl.so.3 -l:libcrypto.so.3\n    cp /tmp/lesson-input/tls-diagnostics-capstone.c /tmp/lab-tls-diagnostics-capstone.source.next\n    rm -f /tmp/lab-tls-diagnostics-capstone.source\n    mv /tmp/lab-tls-diagnostics-capstone.next /tmp/lab-tls-diagnostics-capstone\n    mv /tmp/lab-tls-diagnostics-capstone.source.next /tmp/lab-tls-diagnostics-capstone.source\nfi",
+      "command": "if ! grep -q '^af_packet ' /proc/modules; then\n    gzip -dc /tmp/lesson-input/af_packet.ko.gz >/tmp/lab-af-packet.ko\n    insmod /tmp/lab-af-packet.ko\nfi\ncd /tmp/lesson-input\n/tmp/lab-tls-diagnostics-capstone"
     },
     {
       "id": "capstone",
