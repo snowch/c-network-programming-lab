@@ -323,7 +323,8 @@ async function bootLinux(run) {
     bzimage: { url: './runtime/vmlinuz-virt' },
     initrd: { buffer: image },
     cmdline: 'console=ttyS0,115200 rdinit=/init rootfstype=ramfs nokaslr panic=1 quiet',
-    memory_size: 768 * 1024 * 1024, filesystem: {}, autostart: true
+    memory_size: 768 * 1024 * 1024, filesystem: {}, autostart: true,
+    disable_keyboard: true, disable_mouse: true
   });
   await new Promise((resolve, reject) => {
     let recent = '';
