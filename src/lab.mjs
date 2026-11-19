@@ -321,7 +321,7 @@ $('run').onclick = async () => {
   if (running) return;
   status.textContent = 'Preparing source';
   const current = lesson;
-  const code = encoder.encode(valueOf(current.file));
+  const code = encoder.encode(source.value);
   const prefix = 'run-' + (++runNumber) + '-';
   const marker = '__LAB_RESULT_' + runNumber + '__';
   running = true;

@@ -15,7 +15,7 @@ export const course = {
     "create-socket.c": "./examples/create-socket.c",
     "bind-socket.c": "./examples/bind-socket.c"
   },
-  "prepare": "if [ ! -x /tmp/net ] || [ /tmp/lesson-input/network.c -nt /tmp/net ]; then\n    echo 'Compiling network.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/network.c -o /tmp/net.next\n    mv /tmp/net.next /tmp/net\nfi",
+  "prepare": "if [ ! -x /tmp/net ] || ! cmp -s /tmp/lesson-input/network.c /tmp/net.source; then\n    echo 'Compiling network.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/network.c -o /tmp/net.next\n    mv /tmp/net.next /tmp/net\n    cp /tmp/lesson-input/network.c /tmp/net.source\nfi",
   "lessons": [
     {
       "id": "create-socket",
@@ -33,7 +33,7 @@ export const course = {
         "Read socket(2)",
         "https://man7.org/linux/man-pages/man2/socket.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/create-socket ] || [ /tmp/lesson-input/create-socket.c -nt /tmp/create-socket ]; then\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/create-socket.c -o /tmp/create-socket.next\n    mv /tmp/create-socket.next /tmp/create-socket\nfi",
+      "prepare": "if [ ! -x /tmp/create-socket ] || ! cmp -s /tmp/lesson-input/create-socket.c /tmp/create-socket.source; then\n    echo 'Compiling create-socket.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/create-socket.c -o /tmp/create-socket.next\n    mv /tmp/create-socket.next /tmp/create-socket\n    cp /tmp/lesson-input/create-socket.c /tmp/create-socket.source\nfi",
       "command": "/tmp/create-socket"
     },
     {
@@ -52,7 +52,7 @@ export const course = {
         "Read bind(2)",
         "https://man7.org/linux/man-pages/man2/bind.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/bind-socket ] || [ /tmp/lesson-input/bind-socket.c -nt /tmp/bind-socket ]; then\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/bind-socket.c -o /tmp/bind-socket.next\n    mv /tmp/bind-socket.next /tmp/bind-socket\nfi",
+      "prepare": "if [ ! -x /tmp/bind-socket ] || ! cmp -s /tmp/lesson-input/bind-socket.c /tmp/bind-socket.source; then\n    echo 'Compiling bind-socket.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/bind-socket.c -o /tmp/bind-socket.next\n    mv /tmp/bind-socket.next /tmp/bind-socket\n    cp /tmp/lesson-input/bind-socket.c /tmp/bind-socket.source\nfi",
       "command": "/tmp/bind-socket"
     },
     {
@@ -71,7 +71,7 @@ export const course = {
         "Read bind(2)",
         "https://man7.org/linux/man-pages/man2/bind.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-basics ] || [ /tmp/lesson-input/socket-basics.c -nt /tmp/socket-basics ]; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\nfi",
+      "prepare": "if [ ! -x /tmp/socket-basics ] || ! cmp -s /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\n    cp /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source\nfi",
       "command": "/tmp/socket-basics socket"
     },
     {
@@ -90,7 +90,7 @@ export const course = {
         "Read recvfrom(2)",
         "https://man7.org/linux/man-pages/man2/recvfrom.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-basics ] || [ /tmp/lesson-input/socket-basics.c -nt /tmp/socket-basics ]; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\nfi",
+      "prepare": "if [ ! -x /tmp/socket-basics ] || ! cmp -s /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\n    cp /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source\nfi",
       "command": "/tmp/socket-basics datagram"
     },
     {
@@ -109,7 +109,7 @@ export const course = {
         "Read accept(2)",
         "https://man7.org/linux/man-pages/man2/accept.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-basics ] || [ /tmp/lesson-input/socket-basics.c -nt /tmp/socket-basics ]; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\nfi",
+      "prepare": "if [ ! -x /tmp/socket-basics ] || ! cmp -s /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source; then\n    echo 'Compiling socket-basics.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-basics.c -o /tmp/socket-basics.next \n    mv /tmp/socket-basics.next /tmp/socket-basics\n    cp /tmp/lesson-input/socket-basics.c /tmp/socket-basics.source\nfi",
       "command": "/tmp/socket-basics listen"
     },
     {
@@ -146,7 +146,7 @@ export const course = {
         "Read ipv6(7)",
         "https://man7.org/linux/man-pages/man7/ipv6.7.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools ipv6"
     },
     {
@@ -165,7 +165,7 @@ export const course = {
         "Read the DNS message format in RFC 1035",
         "https://www.rfc-editor.org/rfc/rfc1035#section-4.1"
       ],
-      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools dns"
     },
     {
@@ -256,7 +256,7 @@ export const course = {
         "Read poll(2)",
         "https://man7.org/linux/man-pages/man2/poll.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools deadline"
     },
     {
@@ -275,7 +275,7 @@ export const course = {
         "Read unix(7)",
         "https://man7.org/linux/man-pages/man7/unix.7.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools unix"
     },
     {
@@ -294,7 +294,7 @@ export const course = {
         "Read connect(2)",
         "https://man7.org/linux/man-pages/man2/connect.2.html"
       ],
-      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "/tmp/socket-tools connect"
     },
     {
@@ -373,7 +373,7 @@ export const course = {
         "lab-server.pem",
         "lab-server-key.pem"
       ],
-      "prepare": "mkdir -p /tmp/lab-openssl\nif [ ! -f /tmp/lab-openssl/openssl/ssl.h ]; then\n    tar -xzf /tmp/lesson-input/openssl-headers.tar.gz -C /tmp/lab-openssl\nfi\nif [ ! -x /tmp/linux-tls ] || [ /tmp/lesson-input/tls.c -nt /tmp/linux-tls ]; then\n    echo 'Compiling tls.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror -I /tmp/lab-openssl /tmp/lesson-input/tls.c -o /tmp/linux-tls.next -l:libssl.so.3 -l:libcrypto.so.3\n    mv /tmp/linux-tls.next /tmp/linux-tls\nfi",
+      "prepare": "mkdir -p /tmp/lab-openssl\nif [ ! -f /tmp/lab-openssl/openssl/ssl.h ]; then\n    tar -xzf /tmp/lesson-input/openssl-headers.tar.gz -C /tmp/lab-openssl\nfi\nif [ ! -x /tmp/linux-tls ] || ! cmp -s /tmp/lesson-input/tls.c /tmp/linux-tls.source; then\n    echo 'Compiling tls.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror -I /tmp/lab-openssl /tmp/lesson-input/tls.c -o /tmp/linux-tls.next -l:libssl.so.3 -l:libcrypto.so.3\n    mv /tmp/linux-tls.next /tmp/linux-tls\n    cp /tmp/lesson-input/tls.c /tmp/linux-tls.source\nfi",
       "command": "cd /tmp/lesson-input\n/tmp/linux-tls"
     },
     {
@@ -395,7 +395,7 @@ export const course = {
       "assets": [
         "af_packet.ko.gz"
       ],
-      "prepare": "if [ ! -x /tmp/socket-tools ] || [ /tmp/lesson-input/socket-tools.c -nt /tmp/socket-tools ]; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\nfi",
+      "prepare": "if [ ! -x /tmp/socket-tools ] || ! cmp -s /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source; then\n    echo 'Compiling socket-tools.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror  /tmp/lesson-input/socket-tools.c -o /tmp/socket-tools.next -lresolv\n    mv /tmp/socket-tools.next /tmp/socket-tools\n    cp /tmp/lesson-input/socket-tools.c /tmp/socket-tools.source\nfi",
       "command": "if ! grep -q '^af_packet ' /proc/modules; then\n    gzip -dc /tmp/lesson-input/af_packet.ko.gz >/tmp/lab-af-packet.ko\n    insmod /tmp/lab-af-packet.ko\nfi\n/tmp/socket-tools packet"
     },
     {
