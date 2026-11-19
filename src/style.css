@@ -16,6 +16,7 @@ button,select,input{font:inherit}
 button,select{min-height:42px;padding:.34rem .68rem;border:1px solid var(--line);border-radius:.4rem;background:var(--paper);color:var(--ink);cursor:pointer}
 button:hover:enabled{border-color:var(--accent)}
 button:disabled{opacity:.5;cursor:default}
+button[aria-disabled=true]{opacity:.65;cursor:default}
 .primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 .layout{max-width:88rem;margin:0 auto;padding:clamp(1.5rem,4vw,3.25rem) clamp(1rem,4vw,3rem)}
 .lesson-picker{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem .65rem;margin-bottom:1.25rem}
@@ -34,10 +35,21 @@ p{margin:.65rem 0 1rem}
 .workspace{background:var(--paper);border:1px solid var(--line);border-radius:.55rem;overflow:hidden}
 .toolbar,#shell{padding:.55rem .7rem}
 .toolbar label,#shell label{font-weight:600}
+.toolbar code{font-family:PlexMono,monospace;font-weight:400}
 textarea,pre,#command{font: .93rem/1.55 PlexMono,monospace}
 textarea,pre{background:var(--code);color:var(--code-ink);margin:0;padding:.85rem;display:block;width:100%;border:0;tab-size:4}
 textarea{resize:vertical;min-height:9rem;white-space:pre}
 pre{min-height:8rem;max-height:21rem;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.output-heading{border-top:1px solid var(--line);padding:.6rem .7rem}
+.output-heading h3{font-size:1rem;margin:0}
+.output-heading p{margin:.25rem 0 0}
+.notice{color:var(--muted);font-size:.94rem;margin:0}
+.tool-panel{padding:0 .7rem .5rem}
+#earlier-run{padding-bottom:.7rem}
+#earlier-run pre{min-height:0}
+#guest-tools{margin-top:1.15rem;border:1px solid var(--line);border-radius:.4rem;background:var(--paper)}
+#guest-tools p{margin:.2rem 0 .35rem}
+#guest-tools .toolbar,#shell{padding-left:0;padding-right:0}
 #shell{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
 #command{flex:1;min-width:12rem;padding:.55rem;border:1px solid var(--line);border-radius:.35rem}
 #runtime-status{font-size:.9rem;color:var(--muted)}
