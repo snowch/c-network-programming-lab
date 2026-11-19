@@ -43,12 +43,19 @@ for (const lesson of course.lessons) {
   }
   for (const key of ['section', 'title', 'intro', 'question', 'task', 'hint', 'explanation', 'transfer', 'command'])
     assert(typeof lesson[key] === 'string' && lesson[key].trim(), lesson.id + ': ' + key);
+  if (lesson.previous) {
+    const archived = course.files[lesson.previous.file];
+    assert(archived && offlinePaths.has(archived.slice(2)), lesson.id + ': earlier draft source must be saved offline');
+  }
   for (const name of lesson.assets ?? []) {
     assert(/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(name), 'invalid guest asset name');
     assert(offlinePaths.has('examples/' + name), name + ' must be saved offline');
   }
   const path = course.files[lesson.file];
   assert(path, lesson.id + ': active file must exist');
+  assert(offlinePaths.has(path.slice(2)), lesson.id + ': starter must be saved offline');
+  if (lesson.buildsOn)
+    assert(ids.has(lesson.buildsOn), lesson.id + ': smaller example must come first');
   const source = await readFile(new URL(path, dist), 'utf8');
   assert(source.includes(lesson.focus), lesson.id + ': intended code must exist');
 }

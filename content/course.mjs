@@ -8,6 +8,7 @@ export const course = {
   "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
   "instructions": "Run in Linux sends the editor contents to the guest. GCC compiles new or edited source before running the exercise. Use the console output to check your prediction.",
   "files": {
+    "first-recv.c": "./examples/first-recv.c",
     "network.c": "./examples/network.c",
     "socket-basics.c": "./examples/socket-basics.c",
     "socket-tools.c": "./examples/socket-tools.c",
@@ -137,7 +138,27 @@ export const course = {
       "command": "/tmp/socket-tools dns"
     },
     {
+      "id": "first-recv",
+      "section": "Stream protocols",
+      "title": "Read once from a TCP socket",
+      "intro": "Send two bytes on a local TCP connection and make one receive call. The provided setup opens and connects the two endpoints.",
+      "question": "What does recv() return when the receiver has room for five bytes and the sender writes two?",
+      "task": "Change first_part from he to hey. Predict the count, then run again.",
+      "hint": "The size passed to recv() is the buffer capacity. Read the returned count.",
+      "explanation": "The receiver got the bytes available on the stream. Making the buffer larger does not make a blocking recv() wait until it fills.",
+      "transfer": "Why should code that expects a five-byte message keep reading after it gets two bytes?",
+      "file": "first-recv.c",
+      "focus": "const char first_part[]",
+      "assets": [
+        "tcp-support.h"
+      ],
+      "support": "tcp-support.h",
+      "prepare": "if [ ! -x /tmp/lab-first-recv ] || ! cmp -s /tmp/lesson-input/first-recv.c /tmp/lab-first-recv.source; then\n    echo 'Compiling first-recv.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/first-recv.c -o /tmp/lab-first-recv.next\n    mv /tmp/lab-first-recv.next /tmp/lab-first-recv\n    cp /tmp/lesson-input/first-recv.c /tmp/lab-first-recv.source\nfi",
+      "command": "/tmp/lab-first-recv"
+    },
+    {
       "id": "stream",
+      "buildsOn": "first-recv",
       "section": "Stream protocols",
       "title": "Read a TCP message in pieces",
       "intro": "TCP connects two sockets and delivers a stream of bytes. The client and server use the guest’s loopback interface, so the traffic remains on this machine.",
@@ -334,3 +355,47 @@ export const course = {
     }
   ]
 };
+
+// Retain the original run configuration for drafts saved against shared files.
+const supportFiles = {
+  'network.c': 'tcp-support.h',
+  'socket-tools.c': 'socket-support.h',
+  'socket-basics.c': null,
+  'tls.c': 'tls-support.h'
+};
+for (const lesson of course.lessons) {
+  if (!Object.hasOwn(supportFiles, lesson.file)) continue;
+  const original = lesson.file;
+  const support = supportFiles[original];
+  lesson.previous = {
+    file: original,
+    prepare: lesson.prepare ?? course.prepare,
+    command: lesson.command,
+    assets: lesson.assets
+  };
+  lesson.file = original === 'tls.c' ? 'tls-client.c' : lesson.id + '.c';
+  course.files[lesson.file] = './examples/' + lesson.file;
+  if (support) {
+    lesson.support = support;
+    lesson.assets = [support, ...(lesson.assets ?? [])];
+  }
+  if (original === 'tls.c') {
+    lesson.prepare = lesson.previous.prepare.replaceAll('tls.c', lesson.file).replaceAll('/tmp/linux-tls', '/tmp/lab-tls-client');
+    lesson.command = lesson.previous.command.replace('/tmp/linux-tls', '/tmp/lab-tls-client');
+    continue;
+  }
+  const source = '/tmp/lesson-input/' + lesson.file;
+  const executable = '/tmp/lab-' + lesson.id;
+  const libraries = original === 'socket-tools.c' ? ' -lresolv' : '';
+  lesson.prepare = [
+    `if [ ! -x ${executable} ] || ! cmp -s ${source} ${executable}.source; then`,
+    `    echo 'Compiling ${lesson.file} in Linux'`,
+    `    gcc -std=c11 -Wall -Wextra -Werror ${source} -o ${executable}.next${libraries}`,
+    `    mv ${executable}.next ${executable}`,
+    `    cp ${source} ${executable}.source`,
+    'fi'
+  ].join('\n');
+  lesson.command = lesson.command.replace(/\/tmp\/[a-z-]+ [a-z0-9-]+$/, executable);
+  if (lesson.command === lesson.previous.command)
+    throw Error('Missing lesson entry point for ' + lesson.id);
+}

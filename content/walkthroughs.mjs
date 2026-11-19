@@ -1,4 +1,23 @@
 export const walkthroughs = {
+  "first-recv": {
+    "goal": "Send two bytes on a local TCP connection and make one receive call. The provided setup opens and connects the two endpoints.",
+    "look": "Find the count returned by recv(), followed by the capacity of the buffer. The next lesson assembles the complete message.",
+    "edit": "const char first_part[]",
+    "steps": [
+      {
+        "heading": "Send the first piece",
+        "text": "The client sends two bytes without the C string terminator.",
+        "anchor": "const char first_part[]",
+        "lines": 3
+      },
+      {
+        "heading": "Measure one receive",
+        "text": "Pass the full buffer capacity and use the return value for the number of bytes copied.",
+        "anchor": "ssize_t received = recv(",
+        "lines": 3
+      }
+    ]
+  },
   "socket-api": {
     "goal": "You have bound a socket to a specific port. Now let Linux pick a free port. The program requests port zero and prints the port it actually got.",
     "look": "Find “requested port 0, bound to 127.0.0.1:…”. The number after the colon is the assigned port. The descriptor on the line above is the handle your program uses, and it is a different number.",

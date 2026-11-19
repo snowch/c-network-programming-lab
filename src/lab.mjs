@@ -13,7 +13,6 @@ let decoder = new TextDecoder();
 const serialByte = new Uint8Array(1);
 const defaults = new Map();
 const edits = new Map();
-const files = Object.keys(course.files);
 const key = 'linux-lab:' + course.slug + ':';
 let lesson, activeFile, selection = 0;
 let vm, boot, bootController, running = false, line = '', terminalText = '';
@@ -39,14 +38,12 @@ $('theme').onclick = () => {
   save('theme', value);
 };
 
-const starterFiles = Promise.all(files.map(async name => {
+async function loadStarter(name) {
+  if (defaults.has(name)) return;
   const response = await fetch(course.files[name]);
   if (!response.ok) throw Error('Could not load ' + name);
   defaults.set(name, await response.text());
-})).then(() => true).catch(error => {
-  status.textContent = error.message;
-  return false;
-});
+}
 
 function draftKey(name) { return lesson.id + '/' + name; }
 function valueOf(name) {
@@ -72,6 +69,9 @@ function showSource(name) {
   file.value = name;
   source.value = valueOf(name) ?? '';
   positionSource(lesson.focus);
+  const support = $('support-code');
+  support.hidden = name !== lesson.file || !lesson.support;
+  if (!support.hidden) support.href = './examples/' + lesson.support;
   showDraftNotice();
 }
 $('edit-step').onclick = () => {
@@ -154,6 +154,14 @@ async function showLesson(index) {
     transfer:'transfer'
   })) $(id).textContent = lesson[field] ?? course[field];
   $('intro').textContent = tutorial.goal;
+  const starter = course.lessons.find(item => item.id === lesson.buildsOn);
+  $('builds-on').hidden = !starter;
+  $('workbench-heading').textContent = starter ? 'Put it together' : 'Run it in Linux';
+  if (starter) {
+    const link = $('builds-on-link');
+    link.href = '#' + starter.id;
+    link.textContent = starter.title;
+  }
   showReferences(lesson.id);
   picker.value = lesson.id;
   $('next-lesson').replaceChildren();
@@ -167,13 +175,23 @@ async function showLesson(index) {
   source.disabled = true;
   $('edit-step').disabled = true;
   $('run').disabled = true;
-  if (await starterFiles && selection === thisSelection) {
-    file.replaceChildren(new Option(lesson.file, lesson.file));
-    showSource(lesson.file);
-    source.disabled = false;
-    $('edit-step').disabled = false;
-    $('run').disabled = running;
+  const previous = lesson.previous?.file;
+  const previousDraft = previous ? (edits.get(draftKey(previous)) ?? read(draftKey(previous))) : null;
+  const required = previousDraft == null ? [lesson.file] : [lesson.file, previous];
+  try {
+    await Promise.all(required.map(loadStarter));
+  } catch (error) {
+    if (selection === thisSelection) status.textContent = error.message;
+    return;
   }
+  if (selection !== thisSelection) return;
+  file.replaceChildren(new Option(lesson.file, lesson.file));
+  if (previousDraft != null && previousDraft !== defaults.get(previous))
+    file.add(new Option('Earlier draft · ' + previous, previous));
+  showSource(lesson.file);
+  source.disabled = false;
+  $('edit-step').disabled = false;
+  $('run').disabled = running;
 }
 function showRoute(moveFocus = false) {
   const index = course.lessons.findIndex(item => '#' + item.id === location.hash);
@@ -339,9 +357,9 @@ async function bootLinux(signal) {
 }
 
 $('run').onclick = async () => {
-  if (running) return;
+  if (running || source.disabled) return;
   status.textContent = 'Preparing source';
-  const current = lesson;
+  const current = activeFile === lesson.previous?.file ? lesson.previous : lesson;
   const code = encoder.encode(source.value);
   const prefix = 'run-' + (++runNumber) + '-';
   const marker = '__LAB_RESULT_' + runNumber + '__';

@@ -59,6 +59,7 @@
       <p class="section-label" id="section"></p>
       <h1 id="lesson-title" tabindex="-1">{{title}}</h1>
       <p class="lede" id="intro"></p>
+      <p id="builds-on" hidden>Try the smaller example first. <a id="builds-on-link"></a></p>
       <p id="question" class="question"></p>
       <section aria-labelledby="walkthrough-heading">
         <h2 id="walkthrough-heading">Walk through the code</h2>
@@ -68,11 +69,12 @@
         <h2 id="workbench-heading">Run it in Linux</h2>
         <div class="workspace">
           <details id="program" class="program-tools">
-            <summary>Edit the complete program</summary>
+            <summary>Edit the lesson program</summary>
             <div class="toolbar">
               <label for="file">Source file</label>
               <select id="file"></select>
               <button type="button" id="restore">Restore starter</button>
+              <a id="support-code" target="_blank" rel="noopener noreferrer" hidden>Read the setup code (new tab)</a>
             </div>
             <textarea id="source" aria-label="Editable lab source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="14"></textarea>
           </details>
