@@ -17,5 +17,6 @@ The closing pass applied the same rubric to all 20 routes:
 - The result explanation and transfer question stay visible. The hint, manual reference and guest tools use descriptive disclosures. The shell has a separate console. The previous completed run opens when its source differs from a finished attempt.
 - The draft keys still identify the same lessons and filenames. A storage failure leaves the current tab usable and offers a source download. If removal fails, Restore starter changes this tab while identifying the older saved draft that may reopen.
 - Build reuse now compares the actual source bytes against the last successful compile. The source record is invalidated before replacing the binary, so an interrupted replacement cannot make an earlier source appear to match a newer executable. A repeated invalid edit still reports the build error.
+- The physical guest keyboard and mouse adapters are disabled in this serial-only workbench. Browser keyboard controls keep working after Linux boots. The concurrent image loading added in `510c600` remains available with a separate Cancel Linux startup action.
 
 The functional checks use the packaged guest in Chromium. Primary references remain attached to the lessons. These checks exercise controls, output and saved work. Learning effectiveness remains unmeasured.

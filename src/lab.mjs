@@ -241,9 +241,12 @@ function showRun() {
   if (busy) runButton.setAttribute('aria-disabled', 'true');
   else runButton.removeAttribute('aria-disabled');
   const stopButton = $('stop');
-  if ((!activeRun?.submitted || activeRun !== run) && document.activeElement === stopButton)
-    runButton.focus({ preventScroll: true });
-  stopButton.hidden = !activeRun?.submitted || activeRun !== run;
+  const canStop = activeRun && activeRun === run && (activeRun.controller || activeRun.submitted);
+  if (!canStop && document.activeElement === stopButton) runButton.focus({ preventScroll: true });
+  setText(stopButton, activeRun?.controller ? 'Cancel Linux startup' : 'Interrupt run');
+  if (activeRun?.controller?.signal.aborted) stopButton.setAttribute('aria-disabled', 'true');
+  else stopButton.removeAttribute('aria-disabled');
+  stopButton.hidden = !canStop;
   const shellReady = guestReady && !busy;
   command.disabled = !shellReady;
   $('shell').querySelector('button').disabled = !shellReady;
@@ -292,29 +295,64 @@ function receive(byte) {
   paint();
 }
 
-async function initrd(run) {
-  const response = await fetch('./runtime/parts.json');
+async function initrd(run, signal) {
+  const response = await fetch('./runtime/parts.json', { signal });
   if (!response.ok) throw Error('Could not open the Linux guest manifest');
   const { parts, bytes } = await response.json();
   const image = new Uint8Array(bytes);
-  let offset = 0;
-  for (const name of parts) {
-    const part = await fetch('./runtime/' + name);
+  // The image builder writes fixed 16 MiB parts, with a shorter final part.
+  // Stream into the final buffer so overlapping requests do not duplicate the image.
+  const partSize = 16 * 1024 * 1024;
+  if (parts.length !== Math.ceil(bytes / partSize)) throw Error('Invalid Linux guest manifest');
+  let loaded = 0, progress = -1;
+  async function loadPart(name, index) {
+    const start = index * partSize;
+    const end = Math.min(start + partSize, bytes);
+    let offset = start;
+    const part = await fetch('./runtime/' + name, { signal });
     if (!part.ok) throw Error('Could not load Linux guest file ' + name);
-    const buffer = new Uint8Array(await part.arrayBuffer());
-    image.set(buffer, offset);
-    offset += buffer.length;
-    runMessage(run, 'Loading Linux image · ' + Math.round(100 * offset / bytes) + '%');
+    function append(chunk) {
+      if (offset + chunk.length > end) throw Error('Invalid Linux guest file ' + name);
+      image.set(chunk, offset);
+      offset += chunk.length;
+      loaded += chunk.length;
+      const percent = Math.floor(100 * loaded / bytes);
+      if (percent !== progress && !signal.aborted) {
+        progress = percent;
+        runMessage(run, 'Loading Linux image · ' + progress + '%');
+      }
+    }
+    if (part.body?.getReader) {
+      const reader = part.body.getReader();
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          append(value);
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    } else {
+      append(new Uint8Array(await part.arrayBuffer()));
+    }
+    if (offset !== end) throw Error('Incomplete Linux guest file ' + name);
   }
-  if (offset !== bytes) throw Error('Incomplete Linux image');
+  const batchSize = 3;
+  for (let index = 0; index < parts.length; index += batchSize) {
+    await Promise.all(parts.slice(index, index + batchSize).map((name, offset) =>
+      loadPart(name, index + offset)));
+  }
   return image.buffer;
 }
 
 async function bootLinux(run) {
+  const { signal } = run.controller;
   shellText = '';
   line = '';
   decoder = new TextDecoder();
-  const [{ V86 }, image] = await Promise.all([import('./runtime/libv86.mjs'), initrd(run)]);
+  const [{ V86 }, image] = await Promise.all([import('./runtime/libv86.mjs'), initrd(run, signal)]);
+  signal.throwIfAborted();
   runMessage(run, 'Booting Linux');
   vm = new V86({
     wasm_path: './runtime/v86.wasm',
@@ -329,8 +367,10 @@ async function bootLinux(run) {
   await new Promise((resolve, reject) => {
     let recent = '';
     const timeout = setTimeout(() => finish(new Error('Linux did not reach its shell. Try running again.')), 300000);
+    const cancel = () => finish(signal.reason);
     function finish(error) {
       clearTimeout(timeout);
+      signal.removeEventListener('abort', cancel);
       vm.remove_listener('serial0-output-byte', listener);
       if (error) reject(error); else resolve();
     }
@@ -339,6 +379,7 @@ async function bootLinux(run) {
       if (recent.includes('LAB_EXCHANGE_FAILED')) finish(Error('Linux could not mount the editor file share.'));
       else if (recent.includes('LAB_READY') && recent.includes('~ # ')) finish();
     }
+    signal.addEventListener('abort', cancel, { once: true });
     vm.add_listener('serial0-output-byte', receive);
     vm.add_listener('serial0-output-byte', listener);
   });
@@ -360,7 +401,14 @@ runButton.onclick = async () => {
   terminal.scrollTop = 0;
   runMessage(run, guestReady ? 'Preparing source' : 'Loading Linux');
   try {
-    if (!guestReady) await bootLinux(run);
+    if (!guestReady) {
+      run.controller = new AbortController();
+      showRun();
+      await bootLinux(run);
+      run.controller.signal.throwIfAborted();
+      run.controller = undefined;
+      showRun();
+    }
     const prefix = 'run-' + number + '-';
     const uploaded = [current.file, ...(current.assets ?? [])];
     await vm.create_file(prefix + current.file, encoder.encode(run.code));
@@ -388,15 +436,26 @@ runButton.onclick = async () => {
     runMessage(run, 'Running in Linux');
     vm.serial0_send(`sh ${scriptName}; printf '\\n${run.resultMarker}%s\\n' "$?"\n`);
   } catch (error) {
+    const cancelled = run.controller?.signal.aborted;
+    run.controller?.abort();
+    run.controller = undefined;
     if (vm) await vm.destroy().catch(() => {});
     vm = undefined;
     guestReady = false;
-    run.text = error.message;
-    complete(run, 'Could not start the run');
+    run.text = cancelled ? 'Select Run in Linux to start the guest again.' : error.message;
+    complete(run, cancelled ? 'Linux startup cancelled' : 'Could not start the run');
   }
 };
 
 $('stop').onclick = () => {
+  const controller = activeRun?.controller;
+  if (controller) {
+    if (!controller.signal.aborted) {
+      controller.abort();
+      runMessage(activeRun, 'Cancelling Linux startup…');
+    }
+    return;
+  }
   if (!vm || !activeRun?.submitted) return;
   activeRun.interrupt = true;
   runMessage(activeRun, 'Interrupt sent to Linux');
