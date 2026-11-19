@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import { readFile, stat } from 'node:fs/promises';
+import { course } from '../content/course.mjs';
+
+const dist = new URL('../dist/', import.meta.url);
+const content = await readFile(new URL('offline.js', dist), 'utf8');
+const match = /^const FILES = (.+);$/m.exec(content);
+assert(match, 'generated offline asset list');
+const offlinePaths = new Set(JSON.parse(match[1]));
+const guest = JSON.parse(await readFile(new URL('runtime/parts.json', dist), 'utf8'));
+let bytes = 0;
+for (const name of guest.parts) {
+  bytes += (await stat(new URL('runtime/' + name, dist))).size;
+  assert(offlinePaths.has('runtime/' + name), name + ' must be saved offline');
+}
+assert.equal(bytes, guest.bytes);
+for (const path of ['index.html', 'style.css', 'lab.mjs', 'course.mjs', 'runtime/libv86.mjs',
+  'runtime/v86.wasm', 'runtime/vmlinuz-virt', 'runtime/parts.json',
+  'runtime/seabios.bin', 'runtime/vgabios.bin', 'fonts/plex-sans.woff2', 'fonts/plex-mono-400.woff2'])
+  assert(offlinePaths.has(path), path + ' must be saved offline');
+for (const [name, url] of Object.entries(course.files)) {
+  assert(offlinePaths.has(url.slice(2)), name + ' must be saved offline');
+}
+const ids = new Set();
+for (const lesson of course.lessons) {
+  assert(!ids.has(lesson.id), 'duplicate lesson ID');
+  ids.add(lesson.id);
+  for (const key of ['section', 'title', 'intro', 'question', 'task', 'hint', 'explanation', 'transfer', 'command'])
+    assert(typeof lesson[key] === 'string' && lesson[key].trim(), lesson.id + ': ' + key);
+  const path = course.files[lesson.file];
+  assert(path, lesson.id + ': active file must exist');
+  const source = await readFile(new URL(path, dist), 'utf8');
+  assert(source.includes(lesson.focus), lesson.id + ': intended code must exist');
+}
+console.log(`Checked ${ids.size} lessons and ${offlinePaths.size} offline assets`);
