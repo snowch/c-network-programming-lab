@@ -56,33 +56,45 @@
       <h1 id="lesson-title" tabindex="-1">{{title}}</h1>
       <p class="lede" id="intro"></p>
       <p id="question" class="question"></p>
+      <section aria-labelledby="walkthrough-heading">
+        <h2 id="walkthrough-heading">Walk through the code</h2>
+        <ol id="walkthrough" class="walkthrough"></ol>
+      </section>
       <section aria-labelledby="workbench-heading">
-        <h2 id="workbench-heading">Run the experiment</h2>
-        <p id="instructions"></p>
+        <h2 id="workbench-heading">Run it in Linux</h2>
         <div class="workspace">
-          <div class="toolbar">
-            <label for="file">Source file</label>
-            <select id="file"></select>
-            <button type="button" id="restore">Restore starter</button>
-          </div>
-          <textarea id="source" aria-label="Editable lab source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="17"></textarea>
+          <details id="program" class="program-tools">
+            <summary>Edit the complete program</summary>
+            <div class="toolbar">
+              <label for="file">Source file</label>
+              <select id="file"></select>
+              <button type="button" id="restore">Restore starter</button>
+            </div>
+            <textarea id="source" aria-label="Editable lab source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="14"></textarea>
+          </details>
           <div class="toolbar controls">
             <button type="button" id="run" class="primary">Run in Linux</button>
             <button type="button" id="stop" disabled>Interrupt</button>
             <button type="button" id="restart" disabled>Reset Linux</button>
             <span id="runtime-status" role="status">Linux is off</span>
           </div>
-          <pre id="terminal" aria-label="Linux console output" tabindex="0">Run the experiment to boot Linux and see its output here.</pre>
-          <form id="shell">
-            <label for="command">Linux shell</label>
-            <input id="command" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" disabled placeholder="Enter a command after Linux boots">
-            <button type="submit" disabled>Send</button>
-          </form>
+          <pre id="terminal" aria-label="Linux console output" tabindex="0">The output from this run will appear here.</pre>
+          <details class="program-tools">
+            <summary>Open Linux shell</summary>
+            <form id="shell">
+              <label for="command">Shell command</label>
+              <input id="command" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" disabled placeholder="Enter a command after Linux boots">
+              <button type="submit" disabled>Send</button>
+            </form>
+          </details>
         </div>
+        <p id="draft-notice" hidden>Your saved edits will run. Choose Restore starter in the editor to repeat the original example.</p>
+        <p class="read-result"><strong>Read the result.</strong> <span id="read-result"></span></p>
       </section>
       <section aria-labelledby="change-heading">
         <h2 id="change-heading">Change one thing</h2>
         <p id="task"></p>
+        <button type="button" id="edit-step" disabled>Show me where to edit</button>
         <details><summary>Hint</summary><p id="hint"></p></details>
         <details><summary>Compare with the worked explanation</summary><p id="explanation"></p></details>
         <p id="transfer" class="question"></p>

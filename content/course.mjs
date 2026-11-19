@@ -2,7 +2,7 @@ export const course = {
   "slug": "c-network-programming-lab",
   "title": "C Network Programming Lab",
   "overview": {
-    "description": "Build network programs using the Linux socket API. Start with a local UDP datagram and a TCP connection, then work through framing, backpressure, DNS, TLS and packet inspection.",
+    "description": "Build network programs using the Linux socket API. Start by creating a socket, binding it, and reading its port in three short runs. Then work through UDP, TCP, framing, backpressure, DNS, TLS and packet inspection.",
     "prerequisites": "Know basic C. The exercises use loopback and bundled DNS and TLS fixtures inside the guest."
   },
   "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
@@ -11,14 +11,54 @@ export const course = {
     "network.c": "./examples/network.c",
     "socket-basics.c": "./examples/socket-basics.c",
     "socket-tools.c": "./examples/socket-tools.c",
-    "tls.c": "./examples/tls.c"
+    "tls.c": "./examples/tls.c",
+    "create-socket.c": "./examples/create-socket.c",
+    "bind-socket.c": "./examples/bind-socket.c"
   },
   "prepare": "if [ ! -x /tmp/net ] || [ /tmp/lesson-input/network.c -nt /tmp/net ]; then\n    echo 'Compiling network.c in Linux'\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/network.c -o /tmp/net.next\n    mv /tmp/net.next /tmp/net\nfi",
   "lessons": [
     {
+      "id": "create-socket",
+      "section": "Socket APIs",
+      "title": "Create a UDP socket",
+      "file": "create-socket.c",
+      "focus": "int fd = socket(",
+      "intro": "Create a UDP socket and see what Linux gives back.",
+      "question": "What does a successful call to socket() give you?",
+      "task": "Change type from SOCK_DGRAM to -1, then select Run in Linux again. Find the error message. Restore the starter before moving on.",
+      "hint": "Linux rejects socket types it does not recognise. Look for the return value checked by the if statement.",
+      "explanation": "The starter call returns a nonnegative descriptor, such as 3. When the type is invalid, socket() returns -1. perror() explains the error and the program exits with status 1.",
+      "transfer": "Why would you avoid passing the result to another socket call until you have checked it?",
+      "reference": [
+        "Read socket(2)",
+        "https://man7.org/linux/man-pages/man2/socket.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/create-socket ] || [ /tmp/lesson-input/create-socket.c -nt /tmp/create-socket ]; then\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/create-socket.c -o /tmp/create-socket.next\n    mv /tmp/create-socket.next /tmp/create-socket\nfi",
+      "command": "/tmp/create-socket"
+    },
+    {
+      "id": "bind-socket",
+      "section": "Socket APIs",
+      "title": "Bind the socket to a local port",
+      "file": "bind-socket.c",
+      "focus": "unsigned short port =",
+      "intro": "Give the UDP socket an address and port on loopback.",
+      "question": "Where does the socket listen for datagrams after bind() succeeds?",
+      "task": "Change port from 4040 to 4041 and run again. Compare the address and port before and after the change.",
+      "hint": "Only the port changes. INADDR_LOOPBACK keeps the address at 127.0.0.1.",
+      "explanation": "The first run binds 127.0.0.1:4040. Changing port binds 127.0.0.1:4041. htons() arranges the port’s bytes in the order the networking API expects.",
+      "transfer": "What could cause bind() to fail even if socket() succeeded?",
+      "reference": [
+        "Read bind(2)",
+        "https://man7.org/linux/man-pages/man2/bind.2.html"
+      ],
+      "prepare": "if [ ! -x /tmp/bind-socket ] || [ /tmp/lesson-input/bind-socket.c -nt /tmp/bind-socket ]; then\n    gcc -std=c11 -Wall -Wextra -Werror /tmp/lesson-input/bind-socket.c -o /tmp/bind-socket.next\n    mv /tmp/bind-socket.next /tmp/bind-socket\nfi",
+      "command": "/tmp/bind-socket"
+    },
+    {
       "id": "socket-api",
       "section": "Socket APIs",
-      "title": "Create and bind a socket",
+      "title": "Read the port Linux chose",
       "file": "socket-basics.c",
       "focus": "static int bind_loopback",
       "intro": "Linux socket APIs work with file descriptors. socket() creates a UDP endpoint. bind() assigns a local address and port, and getsockname() reports the address the kernel chose.",

@@ -12,7 +12,9 @@ Choose **Download for offline use** before disconnecting. Save roughly 145 MB of
 
 ### Socket APIs
 
-- [Create and bind a socket](https://snowch.github.io/c-network-programming-lab/#socket-api)
+- [Create a UDP socket](https://snowch.github.io/c-network-programming-lab/#create-socket)
+- [Bind the socket to a local port](https://snowch.github.io/c-network-programming-lab/#bind-socket)
+- [Read the port Linux chose](https://snowch.github.io/c-network-programming-lab/#socket-api)
 - [Send and receive a UDP datagram](https://snowch.github.io/c-network-programming-lab/#datagram-api)
 - [Listen for and accept TCP connections](https://snowch.github.io/c-network-programming-lab/#listen-api)
 
