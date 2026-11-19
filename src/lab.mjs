@@ -67,7 +67,7 @@ function showDraftStatus() {
   const draftNotice = $('draft-notice');
   draftNotice.hidden = source.disabled || (!changed && !earlier);
   setText(draftNotice, earlier ? `Run in Linux will use the earlier shared program in ${activeFile}. Open editor at the change to switch to ${lesson.file} for this lesson’s edit.` :
-    'Run in Linux will use the draft in this lesson’s editor.');
+    'Run in Linux will use your draft. To run the original, open Edit the lesson program and select Restore starter.');
   $('restore').hidden = source.disabled || (!changed && message?.saved !== false);
 }
 function positionSource(needle) {
@@ -308,7 +308,7 @@ function showOutput() {
   const run = latestRuns.get(lesson.id);
   const liveLine = run && run === activeRun && run.capture ? line : '';
   output(terminal, run ? (run.text + liveLine || 'Waiting for Linux output…') :
-    'Select Run in Linux to see output from this lesson.');
+    'Run output will appear here.');
   output(shellOutput, shellText + (!activeRun ? line : '') || 'Linux is off.');
 }
 function openComparison() {

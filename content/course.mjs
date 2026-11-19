@@ -6,7 +6,7 @@ export const course = {
     "prerequisites": "You should be able to read a small C function with variables, arrays, pointers and return values. The course introduces the Linux calls as you use them. All traffic stays inside the browser’s Linux guest. DNS and TLS use bundled examples."
   },
   "summary": "Learn Linux socket APIs in C, then build and diagnose TCP, UDP, DNS and TLS exchanges.",
-  "instructions": "Select Run in Linux to start the guest and run the lesson program. For the first run, use the starter source. If you have edits here, open Edit the lesson program and select Restore starter to repeat the original run.",
+  "instructions": "The page opens the lesson source automatically. Select Run in Linux to build and run the program in the guest. On your first visit, leave the starter source as it is.",
   "files": {
     "first-recv.c": "./examples/first-recv.c",
     "network.c": "./examples/network.c",
