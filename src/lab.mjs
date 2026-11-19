@@ -79,6 +79,9 @@ $('edit-step').onclick = () => {
   const edit = tutorials[lesson.id].edit;
   positionSource(source.value.includes(edit) ? edit : lesson.focus);
 };
+$('program').addEventListener('toggle', () => {
+  if ($('program').open && document.activeElement !== source) positionSource(lesson.focus);
+});
 source.oninput = () => {
   const draft = draftKey(activeFile);
   edits.set(draft, source.value);
@@ -118,6 +121,7 @@ async function showLesson(index) {
     const title = document.createElement('h3');
     const description = document.createElement('p');
     const sample = document.createElement('pre');
+    sample.tabIndex = 0;
     const code = document.createElement('code');
     title.textContent = step.heading;
     description.textContent = step.text;
