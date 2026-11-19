@@ -4,6 +4,57 @@ import { course } from '../content/course.mjs';
 import { references } from '../dist/references.mjs';
 import { concepts } from '../dist/concepts.mjs';
 
+const hasText = value => typeof value === 'string' && Boolean(value.trim());
+const pair = value => Array.isArray(value) && value.length === 2 && value.every(hasText);
+const listOf = (value, minimum, valid) =>
+  Array.isArray(value) && value.length >= minimum && value.every(valid);
+
+function checkDiagram(concept, id) {
+  assert(hasText(concept?.title) && hasText(concept.caption), id + ': concept explanation is required');
+  const diagram = concept.visual;
+  if (!diagram) {
+    assert(listOf(concept.nodes, 2, pair), id + ': label each process stage');
+    return;
+  }
+  const { kind } = diagram;
+  let valid;
+  switch (kind) {
+    case 'sequence':
+      valid = pair(diagram.participants) && listOf(diagram.messages, 2, ([direction, label, note]) =>
+        ['left', 'right', 'local-left', 'local-right'].includes(direction) &&
+        hasText(label) && (note === undefined || hasText(note)));
+      break;
+    case 'state':
+      valid = hasText(diagram.identity) && pair(diagram.before) &&
+        hasText(diagram.action) && pair(diagram.after);
+      break;
+    case 'compare':
+      valid = diagram.cases?.length === 2 &&
+        listOf(diagram.cases, 2, ({ label, facts }) => hasText(label) && listOf(facts, 1, pair));
+      break;
+    case 'object':
+      valid = diagram.sources?.length === 2 && listOf(diagram.sources, 2, pair) &&
+        pair(diagram.target) && (diagram.field === undefined || pair(diagram.field));
+      break;
+    case 'bytes':
+      valid = listOf(diagram.bands, 2, ({ label, tone, cells, width, value, note }) =>
+        hasText(label) && ['head', 'data', 'pending', 'discarded'].includes(tone) &&
+        (cells ? listOf(cells, 1, hasText) : Number.isFinite(width) && width > 0 && hasText(value)) &&
+        (note === undefined || hasText(note))) && (diagram.result === undefined || pair(diagram.result));
+      break;
+    case 'queue':
+      valid = pair(diagram.writer) && pair(diagram.reader) && hasText(diagram.name) &&
+        listOf(diagram.cells, 1, value => value === null || hasText(value)) &&
+        (diagram.signal === undefined || pair(diagram.signal));
+      break;
+    case 'layers':
+      valid = listOf(diagram.layers, 2, layer => layer.length === 3 && layer.every(hasText)) &&
+        listOf(diagram.crossings, 1, hasText) && diagram.crossings.length === diagram.layers.length - 1;
+      break;
+  }
+  assert(valid, id + ': invalid ' + kind + ' concept diagram');
+}
+
 const dist = new URL('../dist/', import.meta.url);
 const content = await readFile(new URL('offline.js', dist), 'utf8');
 const match = /^const FILES = (.+);$/m.exec(content);
@@ -16,7 +67,8 @@ for (const name of guest.parts) {
   assert(offlinePaths.has('runtime/' + name), name + ' must be saved offline');
 }
 assert.equal(bytes, guest.bytes);
-for (const path of ['index.html', 'style.css', 'lab.mjs', 'course.mjs', 'walkthroughs.mjs', 'references.mjs', 'concepts.mjs', 'runtime/libv86.mjs',
+for (const path of ['index.html', 'style.css', 'concept-diagrams.css', 'concept-diagrams.mjs',
+  'lab.mjs', 'course.mjs', 'walkthroughs.mjs', 'references.mjs', 'concepts.mjs', 'runtime/libv86.mjs',
   'runtime/v86.wasm', 'runtime/vmlinuz-virt', 'runtime/parts.json',
   'runtime/seabios.bin', 'runtime/vgabios.bin', 'fonts/plex-sans.woff2', 'fonts/plex-mono-400.woff2'])
   assert(offlinePaths.has(path), path + ' must be saved offline');
@@ -32,11 +84,7 @@ const ids = new Set();
 for (const lesson of course.lessons) {
   assert(!ids.has(lesson.id), 'duplicate lesson ID');
   ids.add(lesson.id);
-  const concept = concepts[lesson.id];
-  assert(concept?.title?.trim() && concept.caption?.trim(), lesson.id + ': concept explanation is required');
-  assert(concept.nodes?.length === 3, lesson.id + ': concept diagram needs three nodes');
-  for (const [label, detail] of concept.nodes)
-    assert(label?.trim() && detail?.trim(), lesson.id + ': concept node must be labelled');
+  checkDiagram(concepts[lesson.id], lesson.id);
   const entries = references[lesson.id];
   assert(Array.isArray(entries) && entries.length >= 2, lesson.id + ': expected API references');
   const urls = new Set();

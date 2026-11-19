@@ -14,7 +14,7 @@ Capstone sections link back to the smaller exercises and open the complete runna
 
 ## Lessons
 
-Each teaching section ends with a capstone that combines its skills. Each lesson opens with a concept diagram.
+Each teaching section ends with a capstone that combines its skills. Diagrams follow packets in both directions during TCP and TLS handshakes and show exactly where stream headers and payload bytes go.
 
 ### Socket APIs
 

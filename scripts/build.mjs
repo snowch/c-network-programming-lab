@@ -47,6 +47,8 @@ for (const lesson of course.lessons) {
 }
 await writeFile(new URL('walkthroughs.mjs', dist), 'export const tutorials = ' + JSON.stringify(tutorials) + ';\n');
 await cp(at('../src/style.css'), new URL('style.css', dist));
+await cp(at('../src/concept-diagrams.css'), new URL('concept-diagrams.css', dist));
+await cp(at('../src/concept-diagrams.mjs'), new URL('concept-diagrams.mjs', dist));
 await cp(at('../src/lab.mjs'), new URL('lab.mjs', dist));
 await cp(at('../content/course.mjs'), new URL('course.mjs', dist));
 await cp(at('../content/references.mjs'), new URL('references.mjs', dist));

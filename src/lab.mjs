@@ -2,6 +2,7 @@ import { course } from './course.mjs';
 import { tutorials } from './walkthroughs.mjs';
 import { references } from './references.mjs';
 import { concepts } from './concepts.mjs';
+import { showConcept } from './concept-diagrams.mjs';
 
 const $ = id => document.getElementById(id);
 const source = $('source');
@@ -188,21 +189,6 @@ function showReferences(id) {
   }));
 }
 
-function showConcept(id) {
-  const concept = concepts[id];
-  $('concept-title').textContent = concept.title;
-  $('concept-caption').textContent = concept.caption;
-  $('concept-stages').replaceChildren(...concept.nodes.map(([label, detail]) => {
-    const node = document.createElement('li');
-    const name = document.createElement('strong');
-    const description = document.createElement('span');
-    name.textContent = label;
-    description.textContent = detail;
-    node.append(name, description);
-    return node;
-  }));
-}
-
 async function showLesson(index) {
   lesson = course.lessons[index];
   activeFile = lesson.file;
@@ -247,7 +233,7 @@ async function showLesson(index) {
     return item;
   }));
   if (lesson.sectionCapstone) $('section').textContent += ' · Section capstone';
-  showConcept(lesson.id);
+  showConcept(concepts[lesson.id]);
   showReferences(lesson.id);
   picker.value = lesson.id;
   $('next-lesson').replaceChildren();
