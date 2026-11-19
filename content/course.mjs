@@ -167,7 +167,7 @@ export const course = {
     },
     {
       "id": "stream",
-      "buildsOn": "first-recv",
+      "buildsOn": ["first-recv"],
       "section": "Stream protocols",
       "title": "Read a TCP message in pieces",
       "intro": "TCP delivers bytes in order. It leaves message boundaries to the application. This program writes part of “hello”, calls recv() on the peer and writes the rest only after that call returns.",
@@ -362,6 +362,7 @@ export const course = {
     },
     {
       "id": "capstone",
+      "buildsOn": ["listen-api", "frames", "half-close"],
       "section": "Capstone",
       "title": "Verify a framed TCP service end to end",
       "intro": "The main program starts a child process that runs a framed echo server. Each client sends one text frame and one empty frame, ends its outgoing stream, then checks both replies and the end of the server stream.",

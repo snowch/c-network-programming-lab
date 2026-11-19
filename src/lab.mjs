@@ -45,7 +45,7 @@ $('theme').onclick = () => {
 
 async function loadStarter(name) {
   if (defaults.has(name)) return;
-  const response = await fetch(course.files[name]);
+  const response = await fetch(course.files[name] ?? './examples/' + name);
   if (!response.ok) throw Error('Could not load ' + name + '. Reload this page to try again.');
   defaults.set(name, await response.text());
 }
@@ -68,8 +68,8 @@ function showDraftStatus() {
   const draftNotice = $('draft-notice');
   draftNotice.hidden = source.disabled || (!changed && !earlier && !hasArchive);
   const guidance = earlier ? `Run in Linux will use the earlier shared program in ${activeFile}. Open editor at the change to switch to ${lesson.file} for this lesson’s edit.` :
-    changed ? 'Run in Linux will use your draft. To run the original, open Edit the lesson program and select Restore starter.' :
-      'An earlier draft is available. Open Edit the lesson program and choose Earlier draft from Source to run.';
+    changed ? 'Run in Linux will use your draft. Choose Restore starter in the editor to run the original.' :
+      'An earlier draft is available. Choose Earlier draft from Source to run in the editor.';
   setText(draftNotice, guidance);
   $('restore').hidden = source.disabled || (!changed && message?.saved !== false);
 }
@@ -89,12 +89,17 @@ function showSource(name) {
   file.value = name;
   $('source-name').textContent = name;
   const support = $('support-code');
-  support.hidden = name !== lesson.file || !lesson.support;
+  const capstone = Boolean(lesson.buildsOn?.length);
+  const showSetup = name === lesson.file && Boolean(lesson.support);
+  support.hidden = !showSetup || capstone;
   if (!support.hidden) support.href = './examples/' + lesson.support;
+  const setup = $('capstone-setup');
+  setup.hidden = !showSetup || !capstone || !defaults.has(lesson.support);
+  if (!setup.hidden) $('setup-source').textContent = defaults.get(lesson.support);
   source.value = valueOf() ?? '';
   source.scrollTop = 0;
   source.scrollLeft = 0;
-  positionSource(lesson.focus);
+  if (!capstone) positionSource(lesson.focus);
 }
 $('edit-step').onclick = () => {
   if (!lesson || source.disabled) return;
@@ -109,7 +114,7 @@ $('edit-step').onclick = () => {
   positionSource(source.value.includes(edit) ? edit : lesson.focus);
 };
 $('program').addEventListener('toggle', () => {
-  if (lesson && $('program').open && document.activeElement !== source) positionSource(lesson.focus);
+  if (lesson && $('program').open && !lesson.buildsOn?.length && document.activeElement !== source) positionSource(lesson.focus);
 });
 file.onchange = () => {
   if (source.disabled) return;
@@ -188,7 +193,12 @@ async function showLesson(index) {
   sourceError = '';
   const thisSelection = ++selection;
   const tutorial = tutorials[lesson.id];
-  $('program').open = false;
+  const prerequisites = lesson.buildsOn ?? [];
+  const capstone = prerequisites.length > 0;
+  $('program').open = capstone;
+  $('program-summary').textContent = capstone ? 'Complete example' : 'Edit the lesson program';
+  $('capstone-setup').open = false;
+  $('capstone-setup').hidden = true;
   $('draft-notice').hidden = true;
   $('walkthrough').replaceChildren(...tutorial.steps.map(step => {
     const item = document.createElement('li');
@@ -210,12 +220,16 @@ async function showLesson(index) {
     instructions:'instructions', task:'task', hint:'hint', explanation:'explanation',
     transfer:'transfer'
   })) $(id).textContent = lesson[field] ?? course[field] ?? '';
-  const smaller = course.lessons.find(item => item.id === lesson.buildsOn);
-  $('builds-on').hidden = !smaller;
-  if (smaller) {
-    $('builds-on-link').href = '#' + smaller.id;
-    $('builds-on-link').textContent = smaller.title;
-  }
+  $('workbench-heading').textContent = capstone ? 'Capstone' : 'Run it in Linux';
+  $('builds-on').hidden = !capstone;
+  $('builds-on-list').replaceChildren(...prerequisites.map(id => {
+    const item = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = '#' + id;
+    link.textContent = course.lessons.find(earlier => earlier.id === id).title;
+    item.append(link);
+    return item;
+  }));
   showReferences(lesson.id);
   picker.value = lesson.id;
   $('next-lesson').replaceChildren();
@@ -223,7 +237,8 @@ async function showLesson(index) {
     if (!other) continue;
     const link = document.createElement('a');
     link.href = '#' + other.id;
-    link.textContent = label + ' · ' + other.title;
+    const followsThisLesson = label === 'Next' && other.buildsOn?.includes(lesson.id);
+    link.textContent = (followsThisLesson ? 'Continue to the capstone' : label) + ' · ' + other.title;
     $('next-lesson').append(link);
   }
   source.disabled = true;
@@ -239,6 +254,7 @@ async function showLesson(index) {
   const previousDraft = previous ? draftOf(previous) : null;
   const required = previousDraft == null ? [lesson.file] : [lesson.file, previous];
   try {
+    if (capstone && lesson.support) required.push(lesson.support);
     await Promise.all(required.map(loadStarter));
   } catch (error) {
     if (selection === thisSelection) {

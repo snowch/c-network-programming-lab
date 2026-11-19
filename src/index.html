@@ -59,7 +59,10 @@
       <p class="section-label" id="section"></p>
       <h1 id="lesson-title" tabindex="-1">{{title}}</h1>
       <p class="lede" id="intro"></p>
-      <p id="builds-on" hidden>Start with the smaller example. <a id="builds-on-link"></a></p>
+      <div id="builds-on" hidden>
+        <p>Try the smaller exercises before running the complete example.</p>
+        <ul id="builds-on-list"></ul>
+      </div>
       <p id="question" class="question"></p>
       <section aria-labelledby="walkthrough-heading">
         <h2 id="walkthrough-heading">Walk through the starter code</h2>
@@ -72,7 +75,7 @@
         <p id="draft-notice" hidden></p>
         <div class="workspace">
           <details id="program" class="program-tools">
-            <summary>Edit the lesson program</summary>
+            <summary id="program-summary">Edit the lesson program</summary>
             <div class="toolbar">
               <label for="source">Editable source <code id="source-name"></code></label>
               <span id="source-options" hidden><label for="file">Source to run</label> <select id="file"></select></span>
@@ -80,6 +83,10 @@
               <a id="support-code" target="_blank" rel="noopener noreferrer" hidden>Read the shared setup (new tab)</a>
             </div>
             <textarea id="source" spellcheck="false" autocapitalize="off" autocomplete="off" rows="14"></textarea>
+            <details id="capstone-setup" class="program-tools" hidden>
+              <summary>Read the setup code</summary>
+              <pre tabindex="0" aria-label="Setup source"><code id="setup-source"></code></pre>
+            </details>
             <p id="draft-status" class="toolbar notice" role="status" hidden></p>
             <div class="toolbar" id="draft-backup" hidden><button type="button" id="download-source">Download source</button></div>
           </details>
