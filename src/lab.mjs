@@ -246,7 +246,8 @@ async function showLesson(index) {
   }
   if (selection !== thisSelection) return;
   file.replaceChildren(new Option(lesson.file, lesson.file));
-  const showArchive = previousDraft != null && previousDraft !== defaults.get(previous);
+  const showArchive = previousDraft != null && (previousDraft !== defaults.get(previous) ||
+    draftMessages.get(draftKey(previous))?.saved === false);
   if (showArchive) file.add(new Option('Earlier draft · ' + previous, previous));
   $('source-options').hidden = !showArchive;
   $('source-name').hidden = showArchive;
