@@ -1,3 +1,6 @@
+let manualShellMarker = '';
+import {mountCourseShell} from './course-shell.mjs';
+import {saveGuestFiles,restoreGuestFiles,clearGuestFiles,rawSavedGuestFiles,captureGuestFiles,guestCommand,acquireGuestOwnership,releaseGuestOwnership} from './guest-files.mjs';
 import { course } from './course.mjs';
 import { tutorials } from './walkthroughs.mjs';
 import { references } from './references.mjs';
@@ -5,6 +8,10 @@ import { concepts } from './concepts.mjs';
 import { showConcept } from './concept-diagrams.mjs';
 
 const $ = id => document.getElementById(id);
+const asset = path => new URL(path, import.meta.url);
+const shellPrompt = 'lab-linux> ';
+let starting = false, maintenance = false, manualShellTouched = false, manualShellBusy = false, startupMessage = '', infrastructureError = '';
+
 const source = $('source');
 const file = $('file');
 const terminal = $('terminal');
@@ -47,7 +54,7 @@ $('theme').onclick = () => {
 
 async function loadStarter(name) {
   if (defaults.has(name)) return;
-  const response = await fetch(course.files[name] ?? './examples/' + name);
+  const response = await fetch(asset(course.files[name] ?? './examples/' + name));
   if (!response.ok) throw Error('Could not load ' + name + '. Reload this page to try again.');
   defaults.set(name, await response.text());
 }
@@ -94,7 +101,7 @@ function showSource(name) {
   const capstone = Boolean(lesson.buildsOn?.length);
   const showSetup = name === lesson.file && Boolean(lesson.support);
   support.hidden = !showSetup || capstone;
-  if (!support.hidden) support.href = './examples/' + lesson.support;
+  if (!support.hidden) support.href = asset('./examples/' + lesson.support).href;
   const setup = $('capstone-setup');
   setup.hidden = !showSetup || !capstone || !defaults.has(lesson.support);
   if (!setup.hidden) $('setup-source').textContent = defaults.get(lesson.support);
@@ -197,7 +204,7 @@ async function showLesson(index) {
   const tutorial = tutorials[lesson.id];
   const prerequisites = lesson.buildsOn ?? [];
   const capstone = prerequisites.length > 0;
-  $('program').open = capstone;
+  $('program').open = true;
   $('program-summary').textContent = capstone ? 'Complete example' : 'Edit the lesson program';
   $('capstone-setup').open = false;
   $('capstone-setup').hidden = true;
@@ -265,6 +272,7 @@ async function showLesson(index) {
     if (selection === thisSelection) {
       sourceError = error.message;
       showRun();
+      window.labControls?.loadFailure();
     }
     return;
   }
@@ -280,6 +288,7 @@ async function showLesson(index) {
   $('edit-step').disabled = false;
   showDraftStatus();
   showRun();
+  dispatchEvent(new Event('lab-lesson-change'));
 }
 
 function showRoute(moveFocus = false) {
@@ -287,8 +296,8 @@ function showRoute(moveFocus = false) {
   const inLesson = index >= 0;
   const pickerFocused = document.activeElement === picker;
   $('overview').hidden = inLesson;
-  $('overview-icon').hidden = inLesson;
-  $('overview-link').hidden = !inLesson;
+  $('overview-icon').hidden = true;
+  $('overview-link').hidden = false;
   $('lesson-navigation').hidden = !inLesson;
   $('workbench').hidden = !inLesson;
   if (inLesson) void showLesson(index);
@@ -329,6 +338,7 @@ function output(element, text) {
 }
 function showOutput() {
   if (!lesson) return;
+  loadStoredRun(lesson.id);
   const run = latestRuns.get(lesson.id);
   const liveLine = run && run === activeRun && run.capture ? line : '';
   output(terminal, run ? (run.text + liveLine || 'Waiting for Linux output…') :
@@ -341,7 +351,9 @@ function openComparison() {
   $('earlier-run').open = Boolean(earlier && current !== activeRun && (earlier.file !== current.file || earlier.code !== current.code));
 }
 function showRun() {
+  window.labControls?.changed();
   if (!lesson) return;
+  loadStoredRun(lesson.id);
   const run = latestRuns.get(lesson.id);
   const earlier = earlierRuns.get(lesson.id);
   const sourceLabel = $('result-source');
@@ -349,7 +361,7 @@ function showRun() {
   if (run) {
     const kind = run.code === defaults.get(run.file) ? 'starter source' : 'edited source';
     const stale = run.file !== activeFile || run.code !== valueOf();
-    setText(sourceLabel, `Run ${run.number} used ${kind} in ${run.file}.` +
+    setText(sourceLabel, (run.restored?'Saved earlier result. ':'') + `Run ${run.number} used ${kind} in ${run.file}.` +
       (stale ? ' The editor has changed. Select Run in Linux to use the current source.' : ''));
   }
   $('earlier-run').hidden = !earlier;
@@ -358,10 +370,10 @@ function showRun() {
     setText($('earlier-run').querySelector('summary'), `Previous completed run ${earlier.number} · ${kind} in ${earlier.file}`);
     setText($('earlier-output'), earlier.text);
   }
-  const busy = Boolean(activeRun || resetting);
+  const busy = Boolean(activeRun || resetting || starting || maintenance || manualShellBusy);
   const message = resetting ? 'Resetting Linux…' : activeRun && activeRun !== run ?
     `A run is active in ${activeRun.lesson.title}.` : run?.message ?? (guestReady ? 'Linux is ready' : 'Linux is off');
-  setText(status, sourceError || message);
+  setText(status, sourceError || infrastructureError || (maintenance ? 'Saving Linux files' : starting ? startupMessage || 'Preparing Linux' : message));
   runButton.disabled = source.disabled;
   if (busy) runButton.setAttribute('aria-disabled', 'true');
   else runButton.removeAttribute('aria-disabled');
@@ -381,20 +393,26 @@ function showRun() {
 }
 function runMessage(run, message) {
   run.message = message;
+  if(starting)startupMessage=message;
   showRun();
 }
 function complete(run, message, completed = false) {
   run.completed = completed;
+  run.message=message;
+  persistRun(run);
   activeRun = undefined;
   line = '';
   if (lesson === run.lesson) openComparison();
   runMessage(run, message);
+  window.labControls?.activity();
+  if(guestReady&&!manualShellTouched&&!resetting&&!maintenance){maintenance=true;showRun();saveGuestFiles(vm,course.slug).catch(error=>window.labControls?.fileFailure(error)).finally(()=>{maintenance=false;showRun();});}
 }
 function receive(byte) {
   const run = activeRun;
   if (byte === 10) {
     const completed = line;
     line = '';
+    if(!run&&manualShellMarker&&completed===manualShellMarker){manualShellMarker='';manualShellBusy=false;showRun();return;}
     if (run && completed === run.startMarker) {
       run.capture = true;
     } else if (run && completed === run.programMarker) {
@@ -415,13 +433,13 @@ function receive(byte) {
   } else if (byte !== 13 && (byte >= 32 || byte === 9 || byte === 27)) {
     serialByte[0] = byte;
     line = (line + decoder.decode(serialByte, { stream: true })).slice(-5000);
-    if (run?.interrupt && line === '~ # ') complete(run, 'Run interrupted');
+    if (run?.interrupt && line === shellPrompt) complete(run, 'Run interrupted');
   }
   paint();
 }
 
 async function initrd(run, signal) {
-  const response = await fetch('./runtime/parts.json', { signal });
+  const response = await fetch(asset('./runtime/parts.json'), { signal });
   if (!response.ok) throw Error('Could not open the Linux guest manifest');
   const { parts, bytes } = await response.json();
   const image = new Uint8Array(bytes);
@@ -434,7 +452,7 @@ async function initrd(run, signal) {
     const start = index * partSize;
     const end = Math.min(start + partSize, bytes);
     let offset = start;
-    const part = await fetch('./runtime/' + name, { signal });
+    const part = await fetch(asset('./runtime/' + name), { signal });
     if (!part.ok) throw Error('Could not load Linux guest file ' + name);
     function append(chunk) {
       if (offset + chunk.length > end) throw Error('Invalid Linux guest file ' + name);
@@ -472,6 +490,7 @@ async function initrd(run, signal) {
 }
 
 async function bootLinux(run) {
+  await acquireGuestOwnership(course.slug);
   const { signal } = run.controller;
   shellText = '';
   line = '';
@@ -480,10 +499,10 @@ async function bootLinux(run) {
   signal.throwIfAborted();
   runMessage(run, 'Booting Linux');
   vm = new V86({
-    wasm_path: './runtime/v86.wasm',
-    bios: { url: './runtime/seabios.bin' },
-    vga_bios: { url: './runtime/vgabios.bin' },
-    bzimage: { url: './runtime/vmlinuz-virt' },
+    wasm_path: asset('./runtime/v86.wasm').href,
+    bios: { url: asset('./runtime/seabios.bin').href },
+    vga_bios: { url: asset('./runtime/vgabios.bin').href },
+    bzimage: { url: asset('./runtime/vmlinuz-virt').href },
     initrd: { buffer: image },
     cmdline: 'console=ttyS0,115200 rdinit=/init rootfstype=ramfs nokaslr panic=1 quiet',
     memory_size: 768 * 1024 * 1024, filesystem: {}, autostart: true,
@@ -508,11 +527,17 @@ async function bootLinux(run) {
     vm.add_listener('serial0-output-byte', receive);
     vm.add_listener('serial0-output-byte', listener);
   });
+  await restoreGuestFiles(vm,course.slug);
+  vm.serial0_send("PS1='"+shellPrompt+"'; export PS1\n");
+  await guestCommand(vm,'true');
   guestReady = true;
+  window.labControls?.changed();
 }
 
 runButton.onclick = async () => {
-  if (!lesson || source.disabled || activeRun || resetting) return;
+  if (!lesson || source.disabled || activeRun || resetting || starting || maintenance || manualShellBusy) return;
+  if(!guestReady&&!await window.labControls.confirmStart())return;
+  infrastructureError='';
   const current = activeFile === lesson.previous?.file ? lesson.previous : lesson;
   const number = ++runNumber;
   const marker = '__LAB_RUN_' + number;
@@ -538,7 +563,7 @@ runButton.onclick = async () => {
     const uploaded = [current.file, ...(current.assets ?? [])];
     await vm.create_file(prefix + current.file, encoder.encode(run.code));
     for (const name of current.assets ?? []) {
-      const response = await fetch('./examples/' + name);
+      const response = await fetch(asset('./examples/' + name));
       if (!response.ok) throw Error('Could not load ' + name);
       await vm.create_file(prefix + name, new Uint8Array(await response.arrayBuffer()));
     }
@@ -564,9 +589,11 @@ runButton.onclick = async () => {
     const cancelled = run.controller?.signal.aborted;
     run.controller?.abort();
     run.controller = undefined;
-    if (vm) await vm.destroy().catch(() => {});
-    vm = undefined;
-    guestReady = false;
+    if(!guestReady){if(vm)await vm.destroy().catch(()=>{});vm=undefined;releaseGuestOwnership();}
+    run.infrastructureFailure=true;
+    if(earlier)latestRuns.set(lesson.id,earlier);else latestRuns.delete(lesson.id);
+    infrastructureError=cancelled?'':'Could not start the run: '+error.message;
+    if(!cancelled&&/load|manifest|request|fetch|network|HTTP|WebAssembly/i.test(error.message))window.labControls?.loadFailure();
     run.text = cancelled ? 'Select Run in Linux to start the guest again.' : error.message;
     complete(run, cancelled ? 'Linux startup cancelled' : 'Could not start the run');
   }
@@ -588,7 +615,9 @@ $('stop').onclick = () => {
 };
 $('shell-stop').onclick = () => vm?.serial0_send('\x03');
 $('restart').onclick = async () => {
-  if (!guestReady || resetting || !confirm('Reset Linux? This clears temporary guest files and keeps editor changes.')) return;
+  if (!guestReady || resetting || maintenance || !confirm('Reset Linux? This removes temporary and saved Linux guest files. Your lesson source edits and results are kept.')) return;
+  try { await clearGuestFiles(course.slug); } catch (error) { status.textContent='Linux was kept: '+error.message; return; }
+  manualShellTouched = false; manualShellBusy = false; startupMessage = '';
   resetting = true;
   if (activeRun) complete(activeRun, 'Run ended when Linux was reset');
   const old = vm;
@@ -596,7 +625,7 @@ $('restart').onclick = async () => {
   guestReady = false;
   showRun();
   try {
-    await old.destroy();
+    await old.destroy();releaseGuestOwnership();
     shellText = 'Linux has been reset. Select Run in Linux to start it again.\n';
   } catch (error) {
     shellText = 'Could not finish resetting Linux: ' + error.message;
@@ -608,49 +637,53 @@ $('restart').onclick = async () => {
 };
 $('shell').onsubmit = event => {
   event.preventDefault();
-  if (!guestReady || activeRun || resetting || !command.value.trim()) return;
-  vm.serial0_send(command.value + '\n');
+  if (!guestReady || activeRun || resetting || starting || maintenance || manualShellBusy || !command.value.trim()) return;
+  manualShellTouched=true;manualShellBusy=true;
+  manualShellMarker='__MANUAL_'+crypto.randomUUID().replaceAll('-','')+'__';
+  vm.serial0_send(command.value + `\nprintf '\\n${manualShellMarker}\\n'\n`);
+  showRun();
   command.value = '';
 };
 
-const offline = $('offline');
-const offlineStatus = $('offline-status');
-function showOffline(message) {
-  offlineStatus.textContent = message;
-  offlineStatus.hidden = !message;
-}
-function ask(worker, type, handle) {
-  const channel = new MessageChannel();
-  channel.port1.onmessage = event => {
-    handle(event.data);
-    if (event.data.done) channel.port1.close();
-  };
-  worker.postMessage(type, [channel.port2]);
-}
-offline.disabled = true;
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./offline.js').then(async () => {
-    const registration = await navigator.serviceWorker.ready;
-    const worker = registration.active;
-    ask(worker, 'status', result => {
-      offline.disabled = result.saved;
-      if (result.saved) {
-        offline.textContent = 'Available offline';
-        showOffline('This course and its Linux guest are saved on this device.');
-      }
-    });
-    offline.onclick = async () => {
-      offline.disabled = true;
-      showOffline('Preparing the offline download…');
-      try { await navigator.storage?.persist?.(); } catch { /* browser chooses */ }
-      ask(worker, 'download', result => {
-        showOffline(result.message);
-        if (!result.done) return;
-        offline.disabled = result.saved;
-        if (result.saved) offline.textContent = 'Available offline';
-      });
-    };
-  }).catch(() => showOffline('Offline downloads are unavailable in this browser.'));
-} else {
-  showOffline('Offline downloads require a browser with service workers.');
-}
+
+function resultKey(run){return run.lesson.id;}
+function persistRun(run){if(run.infrastructureFailure)return;const record={...run,controller:undefined,lesson:run.lesson.id};if(!save('result:'+resultKey(run),JSON.stringify({schema:1,run:record})))run.outputSaveFailed=true;}
+function loadStoredRun(name){if(latestRuns.has(name))return;try{const saved=JSON.parse(read('result:'+name)||'null');if(saved?.schema!==1||typeof saved.run?.text!=='string')return;const run={...saved.run,lesson:course.lessons.find(l=>l.id===saved.run.lesson),restored:true};if(!run.lesson)return;latestRuns.set(name,run);runNumber=Math.max(runNumber,run.number||0);}catch{}}
+
+const api = {
+ currentLesson: () => lesson,
+ isBusy: () => Boolean(activeRun || resetting || starting || maintenance || manualShellBusy || manualShellTouched),
+ state: () => ({ready:guestReady,busy:Boolean(activeRun || resetting || starting || maintenance || manualShellBusy),idleEligible:!manualShellTouched,detail:startupMessage||activeRun?.message||'',phase:maintenance?'Saving files':starting||activeRun?.controller?'Starting':activeRun?'Running':guestReady?'Ready':'Stopped'}),
+ async start(){
+  if(guestReady)return;
+  if(starting||activeRun||maintenance)throw Error('Wait for the current runner action to finish.');
+  starting=true;showRun();const run={controller:new AbortController(),message:''};
+  try{await bootLinux(run);}catch(error){run.controller.abort();if(vm)await vm.destroy().catch(()=>{});vm=undefined;guestReady=false;releaseGuestOwnership();throw error;}finally{starting=false;startupMessage='';showRun();}
+ },
+ async freeMemory(){
+  if(!guestReady)return;
+  if(activeRun||starting||resetting||maintenance||manualShellBusy)throw Error('Finish or interrupt the active experiment or shell command first.');
+  maintenance=true;showRun();
+  try{await saveGuestFiles(vm,course.slug);await vm.destroy();releaseGuestOwnership();vm=undefined;guestReady=false;manualShellTouched=false;manualShellBusy=false;line='';shellText='Linux stopped. Your guest files are saved and restore on the next start.';}finally{maintenance=false;showRun();}
+ },
+ async downloadFiles(){
+  if(!guestReady||activeRun||starting||resetting||maintenance||manualShellBusy)throw Error('Finish the experiment or shell command before downloading guest files.');
+  maintenance=true;showRun();try{const bytes=await captureGuestFiles(vm);const url=URL.createObjectURL(new Blob([bytes],{type:'application/gzip'}));const link=document.createElement('a');link.href=url;link.download=course.slug+'-linux-work.tar.gz';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}finally{maintenance=false;showRun();}
+ },
+ async downloadSavedFiles(){const bytes=await rawSavedGuestFiles(course.slug);const url=URL.createObjectURL(new Blob([bytes],{type:'application/gzip'}));const a=document.createElement('a');a.href=url;a.download=course.slug+'-saved-linux-work.tar.gz';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},
+ async discardSavedFiles(){if(guestReady||activeRun||starting||maintenance)throw Error('Free memory or finish the current experiment first.');await clearGuestFiles(course.slug);},
+ async saveReading(){
+  if(this.isBusy())throw Error('Finish the experiment and use Code runner to save and stop any manual shell session before restarting.');
+  if(guestReady){maintenance=true;showRun();try{await saveGuestFiles(vm,course.slug);}finally{maintenance=false;showRun();}}
+  return {edits:[...edits],latest:[...latestRuns].map(([key,run])=>[key,{...run,lesson:run.lesson.id,controller:undefined}]),earlier:[...earlierRuns].map(([key,run])=>[key,{...run,lesson:run.lesson.id,controller:undefined}]),runNumber,shellText,activeFile,code:source.value,programOpen:$('program').open,fullSource:lesson?valueOf():null};
+ },
+ async restoreReading(saved){
+  if(!saved)return;
+  for(let i=0;lesson&&source.disabled&&i<100;i++)await new Promise(resolve=>setTimeout(resolve,50));
+  if(lesson&&source.disabled)throw Error('The lesson source is not ready. Keep the saved snapshot and reload online.');
+  for(const[key,value]of saved.edits||[])edits.set(key,value);
+  for(const[name,map]of [['latest',latestRuns],['earlier',earlierRuns]])for(const[key,run]of saved[name]||[])map.set(key,{...run,lesson:course.lessons.find(item=>item.id===run.lesson)||lesson,restored:true});
+  runNumber=saved.runNumber||0;shellText=saved.shellText||'';if(!lesson){showRun();return;}if(saved.activeFile&&typeof saved.fullSource==='string')edits.set(draftKey(saved.activeFile),saved.fullSource);showSource(saved.activeFile||lesson.file);$('program').open=saved.programOpen;showDraftStatus();showRun();
+ }
+};
+mountCourseShell({course,references,api});
