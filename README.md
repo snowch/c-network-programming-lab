@@ -8,7 +8,7 @@ Each lesson opens its own runnable program. The editor links the shared setup wh
 
 Each lesson includes editable C source, a runnable experiment, a code change, a hint and a transfer question. **Run in Linux** compiles the source with GCC and executes it in a self-hosted Alpine Linux guest using WebAssembly. Source changes are saved per lesson when browser storage is available. If the page reports a storage failure, **Download source** saves the copy in the current tab. **Reset Linux** clears guest files and keeps the editor changes. The next run boots a fresh guest.
 
-Choose **Download for offline use** before disconnecting. Save roughly 145 MB of free browser storage for this course. Open the same URL in the same browser profile after the page reports **Available offline**. The lesson files, editor, compiler, kernel and runtime are included. External documentation requires an internet connection. HTTPS or localhost and a browser with WebAssembly and service workers are required.
+Choose **App status → Save offline copy** before disconnecting. Save roughly 145 MB of free browser storage for this course. Open the same URL in the same browser profile after the page reports **Downloaded and ready to use offline**. The lesson files, editor, compiler, kernel and runtime are included. External documentation requires an internet connection. HTTPS or localhost and a browser with WebAssembly and service workers are required.
 
 Capstone sections link back to the smaller exercises and open the complete runnable example.
 

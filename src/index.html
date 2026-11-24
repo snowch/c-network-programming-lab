@@ -9,6 +9,10 @@
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./concept-diagrams.css">
+  <link rel="stylesheet" href="./material-symbols.css">
+  <link rel="stylesheet" href="./course-shell.css">
+  <link rel="stylesheet" href="./app-status.css">
+  <link rel="stylesheet" href="./runtime-recovery.css">
   <script type="module" src="./lab.mjs"></script>
 </head>
 <body>
@@ -21,12 +25,12 @@
         <span>{{title}}</span>
       </a>
       <div class="actions">
+        <button type="button" id="code-runner-open" aria-haspopup="dialog">Code runner<span id="runner-summary">Stopped</span></button>
+        <!-- app-status-control -->
         <button type="button" id="theme">Dark theme</button>
-        <button type="button" id="offline">Download for offline use</button>
       </div>
     </div>
   </header>
-  <p class="offline-status" id="offline-status" role="status" hidden></p>
   <main id="main" class="layout" tabindex="-1">
     <section id="overview" aria-labelledby="overview-title">
       <div class="course-hero">
@@ -44,7 +48,7 @@
         </section>
         <section aria-labelledby="offline-help">
           <h2 id="offline-help">Learning offline</h2>
-          <p>While connected, choose <strong>Download for offline use</strong> and wait for <strong>Available offline</strong>. Reopen the same course URL in this browser profile. Manual links need a connection.</p>
+          <p>Open <strong>App status</strong> and choose <strong>Save offline copy</strong>. Wait for <strong>Downloaded and ready to use offline</strong> before disconnecting. Readings, API notes, course tools and the Linux guest are included. Saved Linux work is separate from the course download.</p>
         </section>
       </div>
       <nav aria-labelledby="outline-title">
@@ -154,6 +158,6 @@
     </article>
     <noscript>This course needs JavaScript to open the editor and boot Linux in WebAssembly.</noscript>
   </main>
-  <footer>Experiments use an isolated Linux guest on this device.</footer>
+  <footer><span>Copyright © 2026 Christopher Snow</span><nav aria-label="Course information"><a href="https://github.com/snowch/c-network-programming-lab">Source</a><a href="./NOTICE.md">Sources and licences</a><a href="https://github.com/snowch/c-network-programming-lab/issues">Report a problem</a></nav></footer>
 </body>
 </html>
