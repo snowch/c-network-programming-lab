@@ -21,3 +21,7 @@ The review checked those findings against `2261e49`, which gives each lesson its
 Checks for the focused programs use the source editor and Linux guest in Chromium. Responsive checks use 320, 390, 768 and 1440 pixels in light and dark configurations and exercise the skip link, edit button, theme control, Linux shell disclosure and offline reference notes. All 32 distinct external manual and protocol URLs responded successfully in the opening review. Learning effectiveness remains unmeasured.
 
 The 6 section capstones completed in the packaged Alpine guest with networking disabled. Build checks verify that each capstone closes its section and links only to earlier lessons in that section. All 27 concept diagrams were checked at desktop and narrow mobile widths.
+
+## Shared header icon controls
+
+UX and learning-design review: compact Material 3 theme/offline actions replace header text controls; 48px targets, action labels, tooltips and focus outlines preserve discoverability and keyboard access. Existing native theme handlers, offline verification, saved work, runner controls and subject-specific links remain authoritative. The saved badge requires a verified current offline copy; an update dot identifies an offered update. Go keeps a status icon because it offers no complete offline copy. No lesson sequence, teaching claims or prerequisites change. Review phone/tablet/desktop, both themes, keyboard, storage denial and the real save/update state transitions. Functional evidence is recorded with the change; it does not establish learning effectiveness.
